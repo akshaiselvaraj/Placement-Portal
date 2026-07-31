@@ -1,0 +1,10 @@
+export { StudentDashboard } from './pages/StudentDashboard';
+export { ProfilePage } from './pages/ProfilePage';
+export { useStudentProfile } from './hooks/useStudentProfile';
+export { studentService } from './services/student.service';
+export { default } from './services/student.service';
+export * from './components/ProfileForm';
+export * from './components/EducationSection';
+export * from './components/ProjectsSection';
+export * from './components/SkillsSection';
+export * from './components/CertificationsSection';

@@ -1,0 +1,288 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  PLACEMENT_OFFICER
+  RECRUITER
+  STUDENT
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SHORTLISTED
+  INTERVIEWING
+  SELECTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  FILLED
+}
+
+enum DriveStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum ProfileStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum InterviewStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ACTION
+}
+
+model User {
+  id                      String                   @id @default(uuid())
+  email                   String                   @unique
+  password                String
+  role                    Role
+  name                    String
+  avatar                  String?
+  isActive                Boolean                  @default(true)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  studentProfile          StudentProfile?
+  recruiterProfile        RecruiterProfile?
+  placementOfficerProfile PlacementOfficerProfile?
+  notifications           Notification[]
+}
+
+model StudentProfile {
+  id             String          @id @default(uuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rollNumber     String          @unique
+  department     String
+  batch          String
+  cgpa           Float?
+  phone          String?
+  bio            String?
+  profileStatus  ProfileStatus   @default(PENDING)
+  linkedin       String?
+  github         String?
+  website        String?
+  educations     Education[]
+  projects       Project[]
+  skills         Skill[]
+  certifications Certification[]
+  resumes        Resume[]
+  portfolios     Portfolio[]
+  applications   Application[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model PlacementOfficerProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department  String
+  designation String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RecruiterProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  designation String?
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Company {
+  id                String             @id @default(uuid())
+  name              String             @unique
+  logo              String?
+  website           String?
+  industry          String?
+  description       String?
+  location          String?
+  recruiterProfiles RecruiterProfile[]
+  jobs              Job[]
+  placementDrives   PlacementDrive[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Job {
+  id           String        @id @default(uuid())
+  title        String
+  description  String
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type         String
+  location     String
+  salaryMin    Float?
+  salaryMax    Float?
+  deadline     DateTime
+  status       JobStatus     @default(DRAFT)
+  eligibility  String?
+  requirements String?
+  postedBy     String
+  applications Application[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model PlacementDrive {
+  id                  String          @id @default(uuid())
+  title               String
+  description         String?
+  companyId           String
+  company             Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  status              DriveStatus     @default(UPCOMING)
+  eligibilityCriteria String?
+  startDate           DateTime
+  endDate             DateTime?
+  interviews          Interview[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+}
+
+model Application {
+  id         String            @id @default(uuid())
+  studentId  String
+  student    StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  jobId      String
+  job        Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  status     ApplicationStatus @default(APPLIED)
+  appliedAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  interviews Interview[]
+
+  @@unique([studentId, jobId])
+}
+
+model Interview {
+  id            String          @id @default(uuid())
+  applicationId String
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  driveId       String?
+  drive         PlacementDrive? @relation(fields: [driveId], references: [id], onDelete: SetNull)
+  date          DateTime
+  type          String
+  location      String?
+  status        InterviewStatus @default(SCHEDULED)
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Resume {
+  id         String         @id @default(uuid())
+  studentId  String
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  templateId String
+  title      String
+  data       Json
+  isApproved Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+model Education {
+  id          String         @id @default(uuid())
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  institution String
+  degree      String
+  field       String
+  startYear   Int
+  endYear     Int?
+  grade       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Project {
+  id          String         @id @default(uuid())
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  techStack   String[]
+  liveUrl     String?
+  repoUrl     String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Skill {
+  id        String         @id @default(uuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  name      String
+  level     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([studentId, name])
+}
+
+model Certification {
+  id        String         @id @default(uuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  name      String
+  issuer    String
+  date      DateTime?
+  url       String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Portfolio {
+  id          String         @id @default(uuid())
+  studentId   String
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  themeId     String
+  title       String
+  data        Json
+  slug        String         @unique
+  isPublished Boolean        @default(false)
+  isApproved  Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}

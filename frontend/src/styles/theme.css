@@ -1,0 +1,170 @@
+/*
+ * ============================================
+ * PLACEMENT PORTAL — DESIGN SYSTEM
+ * ============================================
+ * 
+ * Single source of truth for all colors, spacing, 
+ * and visual properties. Changing values here 
+ * updates the entire application.
+ *
+ * Usage: var(--primary), var(--background), etc.
+ * ============================================
+ */
+
+:root {
+  /* ---- Brand Colors (HSL values for Tailwind compatibility) ---- */
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
+  --primary-hover: 221 83% 45%;
+
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --secondary-hover: 210 40% 90%;
+
+  --accent: 262 83% 58%;
+  --accent-foreground: 210 40% 98%;
+
+  /* ---- Surfaces ---- */
+  --background: 210 20% 98%;
+  --foreground: 222.2 84% 4.9%;
+
+  --surface: 0 0% 100%;
+  --surface-foreground: 222.2 84% 4.9%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 47.4% 11.2%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+
+  /* ---- Text ---- */
+  --text-primary: 222.2 47.4% 11.2%;
+  --text-secondary: 215.4 16.3% 46.9%;
+  --text-muted: 215.4 16.3% 66.9%;
+
+  /* ---- Semantic Colors ---- */
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
+  --success-light: 142 76% 94%;
+
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+  --warning-light: 38 92% 94%;
+
+  --danger: 0 84% 60%;
+  --danger-foreground: 0 0% 100%;
+  --danger-light: 0 84% 95%;
+
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 100%;
+  --info-light: 199 89% 94%;
+
+  /* ---- Borders & Rings ---- */
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221 83% 53%;
+
+  /* ---- Layout ---- */
+  --radius: 0.625rem;
+  --radius-sm: 0.375rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  /* ---- Shadows ---- */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* ---- Sidebar ---- */
+  --sidebar-width: 16rem;
+  --sidebar-collapsed-width: 4.5rem;
+  --navbar-height: 4rem;
+
+  /* ---- Transitions ---- */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- Chart Colors ---- */
+  --chart-1: 221 83% 53%;
+  --chart-2: 262 83% 58%;
+  --chart-3: 142 76% 36%;
+  --chart-4: 38 92% 50%;
+  --chart-5: 0 84% 60%;
+  --chart-6: 199 89% 48%;
+}
+
+/* ============================================
+ * DARK MODE
+ * ============================================ */
+.dark {
+  --primary: 217 91% 60%;
+  --primary-foreground: 222.2 84% 4.9%;
+  --primary-hover: 217 91% 68%;
+
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --secondary-hover: 217.2 32.6% 22%;
+
+  --accent: 262 83% 68%;
+  --accent-foreground: 222.2 84% 4.9%;
+
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+
+  --surface: 217.2 32.6% 10%;
+  --surface-foreground: 210 40% 98%;
+
+  --card: 217.2 32.6% 10%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 217.2 32.6% 10%;
+  --popover-foreground: 210 40% 98%;
+
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  --text-primary: 210 40% 98%;
+  --text-secondary: 215 20.2% 65.1%;
+  --text-muted: 215 20.2% 45.1%;
+
+  --success: 142 71% 45%;
+  --success-foreground: 0 0% 100%;
+  --success-light: 142 71% 12%;
+
+  --warning: 38 92% 55%;
+  --warning-foreground: 0 0% 0%;
+  --warning-light: 38 92% 12%;
+
+  --danger: 0 84% 60%;
+  --danger-foreground: 0 0% 100%;
+  --danger-light: 0 84% 12%;
+
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 100%;
+  --info-light: 199 89% 12%;
+
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 217 91% 60%;
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+
+  --chart-1: 217 91% 60%;
+  --chart-2: 262 83% 68%;
+  --chart-3: 142 71% 45%;
+  --chart-4: 38 92% 55%;
+  --chart-5: 0 84% 60%;
+  --chart-6: 199 89% 48%;
+}

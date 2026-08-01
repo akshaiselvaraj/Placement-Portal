@@ -472,15 +472,19 @@ export class RecruiterService {
       throw ApiError.notFound('Recruiter profile not found');
     }
 
+    const whereClause = query && query.trim()
+      ? {
+          OR: [
+            { user: { name: { contains: query, mode: 'insensitive' } } },
+            { user: { email: { contains: query, mode: 'insensitive' } } },
+            { department: { contains: query, mode: 'insensitive' } },
+            { skills: { some: { name: { contains: query, mode: 'insensitive' } } } },
+          ],
+        }
+      : {};
+
     return await prisma.studentProfile.findMany({
-      where: {
-        OR: [
-          { user: { name: { contains: query, mode: 'insensitive' } } },
-          { user: { email: { contains: query, mode: 'insensitive' } } },
-          { department: { contains: query, mode: 'insensitive' } },
-          { skills: { some: { name: { contains: query, mode: 'insensitive' } } } },
-        ],
-      },
+      where: whereClause,
       include: {
         user: { select: { id: true, name: true, email: true, avatar: true } },
         skills: true,
@@ -490,9 +494,10 @@ export class RecruiterService {
         resumes: { take: 1 },
         portfolios: { where: { isPublished: true }, take: 1 },
       },
-      take: 20,
+      take: 50,
     });
   }
+
 
   /**
    * Schedule an interview.

@@ -67,6 +67,13 @@ export interface Company {
   address: string | null;
   createdAt: string;
   jobs?: Job[];
+  recruiterName?: string | null;
+  recruiterEmail?: string | null;
+  recruiterPhone?: string | null;
+  hrContact?: string | null;
+  averagePackage?: number | null;
+  highestPackage?: number | null;
+  notes?: string | null;
 }
 
 export interface Job {
@@ -121,6 +128,13 @@ export interface Application {
   job?: Job;
   statusHistory?: StatusHistory[];
   interviews?: Interview[];
+  ctc?: number;
+  baseSalary?: number;
+  bonus?: number;
+  stocks?: number;
+  benefits?: string | null;
+  offerLetter?: string | null;
+  joiningStatus?: string | null;
 }
 
 export interface StatusHistory {
@@ -144,6 +158,19 @@ export interface PlacementDrive {
   endDate: string | null;
   company?: Company;
   createdAt: string;
+  jobRole?: string;
+  package?: number;
+  location?: string | null;
+  employmentType?: string | null;
+  registrationDeadline?: string | null;
+  departmentsEligible?: string[];
+  minCgpa?: number;
+  maxBacklogs?: number;
+  requiredSkills?: string[];
+  batchYear?: number | null;
+  openings?: number | null;
+  bondDetails?: string | null;
+  requiredDocuments?: string[];
 }
 
 export interface Interview {
@@ -161,6 +188,8 @@ export interface Interview {
   result: string | null;
   feedback: string | null;
   notes: string | null;
+  instructions?: string | null;
+  attendance?: string | null;
   application?: Application;
   drive?: PlacementDrive;
 }
@@ -262,3 +291,59 @@ export interface AuthResponse {
   token: string;
   user: User;
 }
+
+export interface Admin {
+  id: string;
+  userId: string;
+  employeeId: string;
+  firstName: string;
+  lastName: string;
+  department: string;
+  designation: string;
+  phone: string | null;
+  role: string;
+  status: string;
+  permissionLevel: number;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user?: User;
+  permissions?: { permission: string }[];
+  activityLogs?: AdminActivityLog[];
+  sessions?: AdminSession[];
+  lastLogin: string | null;
+}
+
+export interface AdminPermission {
+  id: string;
+  adminId: string;
+  permission: string;
+  createdAt: string;
+}
+
+export interface AdminActivityLog {
+  id: string;
+  adminId: string;
+  action: string;
+  details: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  admin?: {
+    firstName: string;
+    lastName: string;
+    employeeId: string;
+  };
+}
+
+export interface AdminSession {
+  id: string;
+  adminId: string;
+  token: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  expiresAt: string;
+  lastActive: string;
+  createdAt: string;
+}
+

@@ -18,11 +18,12 @@ import {
   ApprovalsDesk,
   InterviewDesk,
   PlacementDrivesPage,
+  CompaniesPage,
   ApplicationsPage,
   InterviewsPage as PlacementInterviewsPage,
   ResultsManagementPage,
 } from '@/features/placement-officer';
-import { AdminDashboard, UsersManagement, CompaniesManagement } from '@/features/admin';
+import { AdminDashboard, UsersManagement, CompaniesManagement, AdminsManagement, SystemSettings, SystemLogs } from '@/features/admin';
 import { ResumesPage, ResumeWorkspace, ResumePreviewPage } from '@/features/resume-builder';
 import { PortfoliosPage, PortfolioWorkspace, PublicPortfolioView } from '@/features/portfolio-generator';
 import { RecruiterJobsPage, BrowseJobsPage, MyApplicationsPage } from '@/features/jobs';
@@ -93,10 +94,34 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/admin/admins',
+        element: (
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminsManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/admin/companies',
         element: (
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <CompaniesManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/settings',
+        element: (
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <SystemSettings />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/logs',
+        element: (
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <SystemLogs />
           </ProtectedRoute>
         ),
       },
@@ -120,7 +145,7 @@ export const router = createBrowserRouter([
         path: '/placement/companies',
         element: (
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
-            <CompaniesManagement />
+            <CompaniesPage />
           </ProtectedRoute>
         ),
       },

@@ -13,6 +13,7 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().min(1, 'SUPABASE_URL is required'),
   SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required'),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
+  SUPABASE_STORAGE_BUCKET: z.string().default('placement-assets'),
   FRONTEND_URL: z.string().default('http://localhost:5173'),
 });
 

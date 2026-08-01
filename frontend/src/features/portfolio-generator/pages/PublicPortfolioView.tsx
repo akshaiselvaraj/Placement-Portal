@@ -176,7 +176,7 @@ export function PublicPortfolioView() {
       },
     };
 
-  const theme = portfolioData.themeId;
+  const theme = publicPortfolio?.themeId || portfolioData.themeId;
   let bgClass = 'bg-slate-50 dark:bg-slate-900';
   if (theme === 'neon') bgClass = 'bg-slate-950';
   else if (theme === 'emerald') bgClass = 'bg-stone-950';

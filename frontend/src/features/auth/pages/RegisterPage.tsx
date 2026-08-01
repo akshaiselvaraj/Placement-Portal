@@ -174,7 +174,6 @@ export function RegisterPage() {
                   className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] transition-all"
                 >
                   <option value="STUDENT">Student</option>
-                  <option value="RECRUITER">Recruiter</option>
                   <option value="PLACEMENT_OFFICER">Placement Officer</option>
                 </select>
               </div>

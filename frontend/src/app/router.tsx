@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { RoleRedirect, ProtectedRoute } from '@/routes';
 import { LoginPage, RegisterPage } from '@/features/auth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -11,7 +11,7 @@ import {
   InterviewDesk,
 } from '@/features/placement-officer';
 import { AdminDashboard, UsersManagement, CompaniesManagement } from '@/features/admin';
-import { ResumesPage, ResumeWorkspace } from '@/features/resume-builder';
+import { ResumesPage, ResumeWorkspace, ResumePreviewPage } from '@/features/resume-builder';
 import { PortfoliosPage, PortfolioWorkspace, PublicPortfolioView } from '@/features/portfolio-generator';
 import { RecruiterJobsPage, BrowseJobsPage, MyApplicationsPage } from '@/features/jobs';
 import { PlacementAnalyticsPage } from '@/features/analytics';
@@ -177,6 +177,18 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <ResumesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/student/resume',
+        element: <Navigate to="/student/resumes" replace />,
+      },
+      {
+        path: '/student/resume/preview/:id',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT', 'RECRUITER', 'PLACEMENT_OFFICER']}>
+            <ResumePreviewPage />
           </ProtectedRoute>
         ),
       },

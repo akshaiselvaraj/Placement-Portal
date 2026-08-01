@@ -80,8 +80,8 @@ export class PortfolioService {
       throw ApiError.notFound('Portfolio page not found');
     }
 
-    // Public links must be both published and verified/approved
-    if (!portfolio.isPublished || !portfolio.isApproved) {
+    // Public links must be published
+    if (!portfolio.isPublished) {
       throw ApiError.forbidden('This portfolio is not currently public');
     }
 

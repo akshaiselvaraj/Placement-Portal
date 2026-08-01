@@ -65,6 +65,50 @@ export function StudentDashboard() {
     },
   ];
 
+  // Calculate Placement Readiness
+  let readinessScore = 20; // base score
+  const recommendations: string[] = [];
+  
+  if (student.cgpa !== null) {
+    readinessScore += 15;
+  } else {
+    recommendations.push('Add CGPA score in your profile (+15%)');
+  }
+
+  if (student.educations && student.educations.length > 0) {
+    readinessScore += 15;
+  } else {
+    recommendations.push('Add educational qualifications (+15%)');
+  }
+
+  if (student.projects && student.projects.length > 0) {
+    readinessScore += 15;
+  } else {
+    recommendations.push('Add a software/engineering project (+15%)');
+  }
+
+  if (student.skills && student.skills.length >= 2) {
+    readinessScore += 15;
+  } else if (student.skills && student.skills.length > 0) {
+    readinessScore += 10;
+    recommendations.push('Add at least 2 skills in your profile (+5%)');
+  } else {
+    recommendations.push('Declare your technical skills (+15%)');
+  }
+
+  if (student.certifications && student.certifications.length > 0) {
+    readinessScore += 15;
+  } else {
+    recommendations.push('Add a certification credential (+15%)');
+  }
+
+  const hasPortfolio = student.portfolios && student.portfolios.length > 0;
+  if (hasPortfolio && student.portfolios?.[0]?.isPublished) {
+    readinessScore += 5;
+  } else {
+    recommendations.push('Generate and publish your portfolio site (+5%)');
+  }
+
   return (
     <div className="space-y-8 animate-in">
       <div>
@@ -74,6 +118,56 @@ export function StudentDashboard() {
         <p className="text-sm text-[hsl(var(--text-secondary))] mt-1">
           Monitor your campus placement progress and manage your profile.
         </p>
+      </div>
+
+      {/* Placement Readiness Score card */}
+      <div className="relative p-6 rounded-2xl border border-purple-500/10 bg-linear-to-r from-purple-500/10 via-indigo-500/5 to-transparent shadow-xs overflow-hidden flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6">
+        <div className="space-y-3 flex-1 text-left">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-400 uppercase tracking-wide">
+              Level Up Profile
+            </span>
+            <span className="text-xs text-[hsl(var(--text-secondary))] font-bold">Your placement preparation roadmap</span>
+          </div>
+          
+          <h3 className="text-xl font-black text-[hsl(var(--text-primary))]">
+            Placement Readiness: <span className="text-purple-450">{readinessScore}%</span>
+          </h3>
+
+          {/* Progress bar */}
+          <div className="w-full bg-[hsl(var(--muted))] rounded-full h-2.5 overflow-hidden">
+            <div
+              className="bg-linear-to-r from-purple-500 to-indigo-650 h-2.5 rounded-full transition-all duration-500"
+              style={{ width: `${readinessScore}%` }}
+            />
+          </div>
+
+          {/* Recommendations list */}
+          {recommendations.length > 0 ? (
+            <div className="space-y-1.5 pt-1">
+              <p className="text-[10px] uppercase tracking-wider font-extrabold text-[hsl(var(--text-secondary))]">Recommendations:</p>
+              <ul className="text-xs font-semibold text-[hsl(var(--text-secondary))] list-disc pl-4 space-y-1">
+                {recommendations.slice(0, 2).map((rec, i) => (
+                  <li key={i}>{rec}</li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="text-xs font-bold text-[hsl(var(--success))] flex items-center gap-1.5">
+              🎉 Outstanding! Your profile is 100% complete and fully placement-ready.
+            </p>
+          )}
+        </div>
+
+        {/* Level up action link */}
+        <div className="flex items-center">
+          <a
+            href="/student/profile"
+            className="w-full md:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-600/20 transition-all cursor-pointer whitespace-nowrap"
+          >
+            Enhance Profile <ChevronRight className="h-4 w-4" />
+          </a>
+        </div>
       </div>
 
       {/* Stats Cards Row */}

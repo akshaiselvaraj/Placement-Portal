@@ -10,9 +10,9 @@ import {
 
 const router = Router();
 
-// Apply global admin authentication and authorization guards to all endpoints
+// Apply global authentication and authorization guards to endpoints
 router.use(authenticate);
-router.use(authorize('ADMIN'));
+router.use(authorize('ADMIN', 'PLACEMENT_OFFICER'));
 
 router.get('/users', validate(userQuerySchema, 'query'), AdminController.getUsers);
 router.put('/users/:id/status', validate(toggleUserStatusSchema), AdminController.toggleUserStatus);

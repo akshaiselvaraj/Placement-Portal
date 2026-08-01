@@ -33,6 +33,9 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
       github: student.github || data.github,
       linkedin: student.linkedin || data.linkedin,
       bio: student.bio || data.bio,
+      avatarUrl: student.user?.avatar || data.avatarUrl || '',
+      ctaText: data.ctaText || 'Get in Touch',
+      ctaUrl: data.ctaUrl || `mailto:${student.user?.email || ''}`,
       tagline: data.tagline || 'Student at ' + student.department,
       education: student.educations?.map((edu) => ({
         institution: edu.institution,
@@ -47,6 +50,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
         description: proj.description,
         techStack: Array.isArray(proj.techStack) ? proj.techStack.join(', ') : proj.techStack,
         repoUrl: proj.repoUrl || '',
+        liveUrl: proj.liveUrl || '',
       })) || data.projects,
       skills: student.skills?.map((s) => ({
         name: s.name,
@@ -103,11 +107,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab as any)}
-              className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all capitalize cursor-pointer ${
-                activeTab === tab
-                  ? 'bg-[hsl(var(--surface))] text-[hsl(var(--primary))] shadow-xs'
-                  : 'text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--muted))]'
-              }`}
+              className="px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all capitalize cursor-pointer focus:outline-none"
             >
               {tab}
             </button>
@@ -125,7 +125,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                     type="text"
                     value={data.name || ''}
                     onChange={(e) => updateField('name', e.target.value)}
-                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -134,7 +134,43 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                     type="text"
                     value={data.tagline || ''}
                     onChange={(e) => updateField('tagline', e.target.value)}
-                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block font-bold mb-1">Avatar Image URL (Optional)</label>
+                  <input
+                    type="text"
+                    value={data.avatarUrl || ''}
+                    onChange={(e) => updateField('avatarUrl', e.target.value)}
+                    placeholder="https://example.com/avatar.jpg"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold mb-1">CTA Button Text (Optional)</label>
+                  <input
+                    type="text"
+                    value={data.ctaText || ''}
+                    onChange={(e) => updateField('ctaText', e.target.value)}
+                    placeholder="e.g. Contact Me"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold mb-1">CTA Button URL (Optional)</label>
+                  <input
+                    type="text"
+                    value={data.ctaUrl || ''}
+                    onChange={(e) => updateField('ctaUrl', e.target.value)}
+                    placeholder="e.g. mailto:email@example.com"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none"
                   />
                 </div>
               </div>
@@ -145,7 +181,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                   rows={4}
                   value={data.bio || ''}
                   onChange={(e) => updateField('bio', e.target.value)}
-                  className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] resize-none"
+                  className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none resize-none"
                 />
               </div>
             </div>
@@ -160,7 +196,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                     type="email"
                     value={data.email || ''}
                     onChange={(e) => updateField('email', e.target.value)}
-                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs focus:outline-none"
                   />
                 </div>
                 <div>
@@ -169,7 +205,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                     type="text"
                     value={data.phone || ''}
                     onChange={(e) => updateField('phone', e.target.value)}
-                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs focus:outline-none"
                   />
                 </div>
               </div>
@@ -181,7 +217,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                     type="url"
                     value={data.github || ''}
                     onChange={(e) => updateField('github', e.target.value)}
-                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs focus:outline-none"
                   />
                 </div>
                 <div>
@@ -190,7 +226,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                     type="url"
                     value={data.linkedin || ''}
                     onChange={(e) => updateField('linkedin', e.target.value)}
-                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs focus:outline-none"
                   />
                 </div>
               </div>
@@ -203,8 +239,8 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                 <h4 className="font-bold text-[hsl(var(--text-primary))]">Showcased Projects</h4>
                 <button
                   type="button"
-                  onClick={() => handleAddListItem('projects', { title: '', description: '', techStack: '', repoUrl: '' })}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.06)] rounded-lg hover:bg-[hsl(var(--primary)/0.1)] cursor-pointer"
+                  onClick={() => handleAddListItem('projects', { title: '', description: '', techStack: '', repoUrl: '', liveUrl: '' })}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.06)] rounded-lg hover:bg-[hsl(var(--primary)/0.1)] cursor-pointer border border-transparent"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Add Project
@@ -222,7 +258,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div>
                         <label className="block text-[10px] font-bold uppercase mb-1">Project Name</label>
                         <input
@@ -230,7 +266,7 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                           required
                           value={proj.title || ''}
                           onChange={(e) => handleUpdateListItem('projects', idx, 'title', e.target.value)}
-                          className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-1.5 px-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                          className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-1.5 px-2.5 text-xs focus:outline-none"
                         />
                       </div>
                       <div>
@@ -239,7 +275,20 @@ export function PortfolioForm({ data, onChange }: PortfolioFormProps) {
                           type="text"
                           value={proj.repoUrl || ''}
                           onChange={(e) => handleUpdateListItem('projects', idx, 'repoUrl', e.target.value)}
-                          className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-1.5 px-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                          className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-1.5 px-2.5 text-xs focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase mb-1">Live Demo URL</label>
+                        <input
+                          type="text"
+                          value={proj.liveUrl || ''}
+                          onChange={(e) => handleUpdateListItem('projects', idx, 'liveUrl', e.target.value)}
+                          placeholder="e.g. https://my-app.vercel.app"
+                          className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-1.5 px-2.5 text-xs focus:outline-none"
                         />
                       </div>
                     </div>

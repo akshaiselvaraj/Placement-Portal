@@ -4,11 +4,11 @@ import type { Skill } from '@/types';
 
 interface SkillsSectionProps {
   skills: Skill[];
-  onAddSkill: (data: { name: string; level?: 'BEGINNER' | 'INTERMEDIATE' | 'EXPERT' }) => Promise<any>;
-  onDeleteSkill: (id: string) => Promise<any>;
+  onAdd: (data: { name: string; level?: 'BEGINNER' | 'INTERMEDIATE' | 'EXPERT' }) => Promise<any>;
+  onDelete: (id: string) => Promise<any>;
 }
 
-export function SkillsSection({ skills, onAddSkill, onDeleteSkill }: SkillsSectionProps) {
+export function SkillsSection({ skills, onAdd, onDelete }: SkillsSectionProps) {
   const [newSkillName, setNewSkillName] = useState('');
   const [skillLevel, setSkillLevel] = useState<'BEGINNER' | 'INTERMEDIATE' | 'EXPERT'>('INTERMEDIATE');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +19,7 @@ export function SkillsSection({ skills, onAddSkill, onDeleteSkill }: SkillsSecti
 
     setIsSubmitting(true);
     try {
-      await onAddSkill({
+      await onAdd({
         name: newSkillName.trim(),
         level: skillLevel,
       });
@@ -88,7 +88,7 @@ export function SkillsSection({ skills, onAddSkill, onDeleteSkill }: SkillsSecti
               )}
               <button
                 type="button"
-                onClick={() => onDeleteSkill(String(skill.id))}
+                onClick={() => onDelete(String(skill.id))}
                 className="text-[hsl(var(--text-muted))] hover:text-[hsl(var(--danger))] transition-colors rounded-full hover:bg-[hsl(var(--surface))] p-0.5"
               >
                 <X className="h-3 w-3" />
@@ -97,6 +97,42 @@ export function SkillsSection({ skills, onAddSkill, onDeleteSkill }: SkillsSecti
           ))}
         </div>
       )}
+
+      {/* Suggested skills */}
+      {(() => {
+        const suggested = [
+          'React', 'Node.js', 'Python', 'JavaScript', 'Java',
+          'SQL', 'Git', 'TypeScript', 'Docker', 'AWS'
+        ].filter(s => !skills.some(skill => skill.name.toLowerCase() === s.toLowerCase()));
+
+        if (suggested.length === 0) return null;
+
+        return (
+          <div className="space-y-2 pt-2 border-t border-[hsl(var(--border))] border-dashed">
+            <p className="text-xs font-semibold text-[hsl(var(--text-secondary))]">Popular Skills (click to add):</p>
+            <div className="flex flex-wrap gap-1.5">
+              {suggested.map(name => (
+                <button
+                  key={name}
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={async () => {
+                    setIsSubmitting(true);
+                    try {
+                      await onAdd({ name, level: skillLevel });
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[11px] font-medium text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--muted))/0.5] hover:text-[hsl(var(--text-primary))] transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  + {name}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

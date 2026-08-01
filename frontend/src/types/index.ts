@@ -25,6 +25,13 @@ export interface StudentProfile {
   github: string | null;
   website: string | null;
   user?: User;
+  educations?: Education[];
+  projects?: Project[];
+  skills?: Skill[];
+  certifications?: Certification[];
+  resumes?: Resume[];
+  portfolios?: Portfolio[];
+  applications?: Application[];
 }
 
 export interface RecruiterProfile {

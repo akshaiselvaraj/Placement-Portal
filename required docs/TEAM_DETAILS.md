@@ -5,7 +5,7 @@ This file contains the details of the team members who developed and contributed
 ## Project Team Information
 
 *   **Project Name:** Placement Management Portal
-*   **Institution:** [Insert Institution/University Name]
+*   **Institution:** [Bannari Amman Institute of Technology]
 *   **Academic Year:** 2026
 *   **Submission Date:** August 1, 2026
 
@@ -15,10 +15,10 @@ This file contains the details of the team members who developed and contributed
 
 | Name | Roll Number / Student ID | Department | Email Address | Project Contribution / Role |
 | :--- | :--- | :--- | :--- | :--- |
-| **[Member 1 Name]** | `[Roll Number 1]` | [e.g. Computer Science] | `[email1@example.com]` | Team Lead, Full Stack / Database design |
-| **[Member 2 Name]** | `[Roll Number 2]` | [e.g. Information Technology] | `[email2@example.com]` | Frontend developer, UI design |
-| **[Member 3 Name]** | `[Roll Number 3]` | [e.g. Electronics] | `[email3@example.com]` | Backend developer, API development |
-| **[Member 4 Name]** | `[Roll Number 4]` | [e.g. Computer Science] | `[email4@example.com]` | QA engineer, Testing, Documentation |
+| **[Ajai Selvaraj]** | `[7376242cb103]` | [Computer Science and Business Systems] | Team Lead, Frontend developer, UI design |
+| **[Akshai Selvaraj]** | `[7376242AD115]` | [AIDS] | Backend developer|
+| **[Rakshana Senthil Kumar]** | `[7376252Al195]` | [AIML] | Testing, Documentation & Quality Assurance |
+| **[Sahithya k]** | `[7376252Al]` | [AIML] | Project Management & Architecture|
 
 ---
 

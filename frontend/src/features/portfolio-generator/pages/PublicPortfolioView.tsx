@@ -190,6 +190,5 @@ export function PublicPortfolioView() {
     </div>
   );
 }
-
 export default PublicPortfolioView;
 

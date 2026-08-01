@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { RoleRedirect, ProtectedRoute } from '@/routes';
 import { LoginPage, RegisterPage } from '@/features/auth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -17,9 +17,13 @@ import {
   StudentsManagement,
   ApprovalsDesk,
   InterviewDesk,
+  PlacementDrivesPage,
+  ApplicationsPage,
+  InterviewsPage,
+  ResultsManagementPage,
 } from '@/features/placement-officer';
 import { AdminDashboard, UsersManagement, CompaniesManagement } from '@/features/admin';
-import { ResumesPage, ResumeWorkspace } from '@/features/resume-builder';
+import { ResumesPage, ResumeWorkspace, ResumePreviewPage } from '@/features/resume-builder';
 import { PortfoliosPage, PortfolioWorkspace, PublicPortfolioView } from '@/features/portfolio-generator';
 import { RecruiterJobsPage, BrowseJobsPage, MyApplicationsPage } from '@/features/jobs';
 import { PlacementAnalyticsPage } from '@/features/analytics';
@@ -61,6 +65,10 @@ export const router = createBrowserRouter([
   },
   {
     path: '/portfolio/public/:slug',
+    element: <PublicPortfolioView />,
+  },
+  {
+    path: '/portfolio/:slug',
     element: <PublicPortfolioView />,
   },
 
@@ -109,6 +117,38 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/placement/companies',
+        element: (
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
+            <CompaniesManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/placement/drives',
+        element: (
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
+            <PlacementDrivesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/placement/applications',
+        element: (
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
+            <ApplicationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/placement/interviews',
+        element: (
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
+            <InterviewsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/placement/approvals',
         element: (
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
@@ -128,7 +168,7 @@ export const router = createBrowserRouter([
         path: '/placement/results',
         element: (
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
-            <InterviewDesk />
+            <ResultsManagementPage />
           </ProtectedRoute>
         ),
       },
@@ -229,7 +269,27 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/student/resume',
+        element: <Navigate to="/student/resumes" replace />,
+      },
+      {
+        path: '/student/resume/preview/:id',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT', 'RECRUITER', 'PLACEMENT_OFFICER']}>
+            <ResumePreviewPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/student/resumes/:id',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT', 'RECRUITER', 'PLACEMENT_OFFICER']}>
+            <ResumeWorkspace />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/student/resume/preview/:id',
         element: (
           <ProtectedRoute allowedRoles={['STUDENT', 'RECRUITER', 'PLACEMENT_OFFICER']}>
             <ResumeWorkspace />

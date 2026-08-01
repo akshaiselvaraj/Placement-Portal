@@ -13,11 +13,32 @@ export function CertificationsSection({ certifications, onAdd, onUpdate, onDelet
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const handleViewCertificate = (url: string) => {
+    if (url.startsWith('data:')) {
+      const newTab = window.open();
+      if (newTab) {
+        newTab.document.write(
+          `<iframe src="${url}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`
+        );
+      } else {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'certificate';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   // Form fields state
   const [name, setName] = useState('');
   const [issuer, setIssuer] = useState('');
   const [date, setDate] = useState('');
   const [url, setUrl] = useState('');
+  const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,6 +47,7 @@ export function CertificationsSection({ certifications, onAdd, onUpdate, onDelet
     setIssuer('');
     setDate('');
     setUrl('');
+    setUploadMode('url');
     setEditingId(null);
   };
 
@@ -34,11 +56,31 @@ export function CertificationsSection({ certifications, onAdd, onUpdate, onDelet
     setIsOpen(true);
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size must be under 2MB!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleOpenEdit = (cert: Certification) => {
     setName(cert.name);
     setIssuer(cert.issuer);
     setDate(cert.date ? new Date(cert.date).toISOString().split('T')[0] : '');
     setUrl(cert.url || '');
+    
+    // Detect if current url is a Base64 file string
+    const isBase64 = cert.url?.startsWith('data:') || false;
+    setUploadMode(isBase64 ? 'file' : 'url');
+    
     setEditingId(String(cert.id));
     setIsOpen(true);
   };
@@ -106,15 +148,14 @@ export function CertificationsSection({ certifications, onAdd, onUpdate, onDelet
                     </span>
                   )}
                   {cert.url && (
-                    <a
-                      href={cert.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[hsl(var(--primary))] hover:underline"
+                    <button
+                      type="button"
+                      onClick={() => handleViewCertificate(cert.url)}
+                      className="inline-flex items-center gap-1 text-[hsl(var(--primary))] hover:underline cursor-pointer bg-transparent border-none p-0 text-[10px] font-semibold"
                     >
                       <ExternalLink className="h-3 w-3" />
                       View Certificate
-                    </a>
+                    </button>
                   )}
                 </div>
               </div>
@@ -198,16 +239,83 @@ export function CertificationsSection({ certifications, onAdd, onUpdate, onDelet
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
-                    Certificate URL
+                    Credential Type
                   </label>
-                  <input
-                    type="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://verify.credentials.com/..."
+                  <select
+                    value={uploadMode}
+                    onChange={(e) => {
+                      setUploadMode(e.target.value as any);
+                      setUrl('');
+                    }}
                     className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
-                  />
+                  >
+                    <option value="url">Link URL</option>
+                    <option value="file">File Upload (PDF/Image)</option>
+                  </select>
                 </div>
+              </div>
+
+              <div>
+                {uploadMode === 'url' ? (
+                  <>
+                    <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
+                      Certificate URL
+                    </label>
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://verify.credentials.com/..."
+                      className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
+                      Upload Certificate (PDF / Image)
+                    </label>
+                    <div className="flex flex-col gap-2">
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="certificate-file-upload"
+                      />
+                      <label
+                        htmlFor="certificate-file-upload"
+                        className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-[hsl(var(--border))] hover:border-[hsl(var(--primary))] bg-[hsl(var(--muted))/0.2] hover:bg-[hsl(var(--muted))/0.4] rounded-xl cursor-pointer transition-all"
+                      >
+                        {url && url.startsWith('data:') ? (
+                          <div className="text-center space-y-1">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[hsl(var(--success-light))] text-[hsl(var(--success))] uppercase">
+                              File Loaded Successfully
+                            </span>
+                            <p className="text-[10px] text-[hsl(var(--text-secondary))] italic mt-1">
+                              Ready to save (Max 2MB)
+                            </p>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setUrl('');
+                              }}
+                              className="text-[10px] text-[hsl(var(--danger))] hover:underline block mx-auto mt-2"
+                            >
+                              Clear File
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-center space-y-1">
+                            <span className="text-xs font-bold text-[hsl(var(--primary))]">+ Choose Local File</span>
+                            <p className="text-[10px] text-[hsl(var(--text-secondary))]">Supports Image or PDF up to 2MB</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="pt-4 flex justify-end gap-3">

@@ -1,3 +1,2 @@
-// Feature: Companies — Company profiles and management
-// This module will be implemented in Phase 12
-export {};
+export { CompaniesManagement as CompaniesPage, CompaniesManagement } from '@/features/admin/pages/CompaniesManagement';
+

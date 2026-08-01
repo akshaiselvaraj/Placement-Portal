@@ -7,6 +7,7 @@ export const updateProfileSchema = z.object({
   linkedin: z.string().url('Invalid URL').nullable().or(z.literal('')).optional(),
   github: z.string().url('Invalid URL').nullable().or(z.literal('')).optional(),
   website: z.string().url('Invalid URL').nullable().or(z.literal('')).optional(),
+  cgpa: z.number().min(0).max(10).nullable().optional(),
 });
 
 export const educationSchema = z.object({

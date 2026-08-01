@@ -1,302 +1,181 @@
 import { useState, useMemo } from 'react';
-import { usePlacementData } from '../hooks/usePlacementData';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { placementService } from '../services/placement.service';
 import { LoadingSkeleton, EmptyState } from '@/components/common';
 import { toast } from '@/store';
 import {
   UserCheck,
   Calendar as CalendarIcon,
-  List,
   Plus,
   Search,
-  User,
   Clock,
   MapPin,
   Video,
-  MessageSquare,
-  Edit,
   X,
+  Edit,
 } from 'lucide-react';
-
-export interface InterviewSlot {
-  id: string;
-  studentName: string;
-  rollNumber: string;
-  companyName: string;
-  roundName: string;
-  interviewerName: string;
-  date: string;
-  time: string;
-  mode: 'ONLINE' | 'OFFLINE';
-  venueOrLink: string;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
-  feedback?: string;
-}
-
-const INITIAL_INTERVIEWS: InterviewSlot[] = [
-  {
-    id: 'int-1',
-    studentName: 'Rakshana S.',
-    rollNumber: '2022CSE045',
-    companyName: 'Google India',
-    roundName: 'Round 2: System Design & Coding',
-    interviewerName: 'Sundar Pitchai (Sr. Tech Lead)',
-    date: '2026-08-05',
-    time: '10:00 AM - 11:00 AM',
-    mode: 'ONLINE',
-    venueOrLink: 'https://meet.google.com/abc-xyz-123',
-    status: 'SCHEDULED',
-    feedback: 'Strong performance in DS/Algo round.',
-  },
-  {
-    id: 'int-2',
-    studentName: 'Akshai V.',
-    rollNumber: '2022CSE012',
-    companyName: 'Microsoft',
-    roundName: 'Round 1: Technical & DSA',
-    interviewerName: 'Ananya Sharma (Engineering Mgr)',
-    date: '2026-08-05',
-    time: '02:00 PM - 03:00 PM',
-    mode: 'OFFLINE',
-    venueOrLink: 'Placement Block C - Interview Room 2',
-    status: 'SCHEDULED',
-  },
-  {
-    id: 'int-3',
-    studentName: 'Divya M.',
-    rollNumber: '2022IT089',
-    companyName: 'Amazon',
-    roundName: 'Round 3: Leadership Principles & HR',
-    interviewerName: 'Rajesh Kumar (HR Director)',
-    date: '2026-08-02',
-    time: '11:30 AM - 12:15 PM',
-    mode: 'ONLINE',
-    venueOrLink: 'https://chime.aws/789101',
-    status: 'COMPLETED',
-    feedback: 'Excellent communication skills. Recommended for offer.',
-  },
-  {
-    id: 'int-4',
-    studentName: 'Karthik R.',
-    rollNumber: '2022ECE034',
-    companyName: 'TCS Digital',
-    roundName: 'Round 1: Aptitude & Technical',
-    interviewerName: 'Vikram Sethi (Team Lead)',
-    date: '2026-08-08',
-    time: '04:00 PM - 05:00 PM',
-    mode: 'OFFLINE',
-    venueOrLink: 'Computer Center Lab 4',
-    status: 'SCHEDULED',
-  },
-];
+import type { Interview } from '@/types';
 
 export function InterviewsPage() {
-  const { isLoadingApplications } = usePlacementData();
-  const [interviews, setInterviews] = useState<InterviewSlot[]>(INITIAL_INTERVIEWS);
-
-  // View Mode: 'LIST' or 'CALENDAR'
-  const [viewMode, setViewMode] = useState<'LIST' | 'CALENDAR'>('LIST');
-
-  // Filters
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [companyFilter, setCompanyFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
-  // Modals & Drawers State
+  // Modals & Drawers
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [editingInterview, setEditingInterview] = useState<InterviewSlot | null>(null);
-  const [feedbackInterview, setFeedbackInterview] = useState<InterviewSlot | null>(null);
-  const [feedbackText, setFeedbackText] = useState('');
+  const [editingInterview, setEditingInterview] = useState<Interview | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
-    studentName: '',
-    rollNumber: '',
-    companyName: '',
-    roundName: 'Round 1: Technical',
-    interviewerName: '',
+    applicationId: '',
+    driveId: '',
     date: '',
-    time: '10:00 AM - 11:00 AM',
-    mode: 'ONLINE' as 'ONLINE' | 'OFFLINE',
-    venueOrLink: '',
+    time: '10:00 AM',
+    duration: '45',
+    interviewer: '',
+    meetingLink: '',
+    roundType: 'Technical',
+    location: '',
+    instructions: '',
+    status: 'SCHEDULED',
+    attendance: 'PENDING',
+    result: 'PENDING',
   });
 
-  // Derived Company Options
+  // Queries
+  const { data: interviews = [], isLoading } = useQuery({
+    queryKey: ['placement-interviews'],
+    queryFn: () => placementService.getInterviews(),
+  });
+
+  const { data: applications = [] } = useQuery({
+    queryKey: ['placement-applications-list'],
+    queryFn: () => placementService.getApplications(),
+  });
+
+  const { data: drives = [] } = useQuery({
+    queryKey: ['placement-drives-list'],
+    queryFn: () => placementService.getDrives(),
+  });
+
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: placementService.scheduleInterview,
+    onSuccess: () => {
+      toast.success('Interview scheduled successfully & student notified');
+      queryClient.invalidateQueries({ queryKey: ['placement-interviews'] });
+      setIsScheduleModalOpen(false);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => placementService.updateInterview(id, data),
+    onSuccess: () => {
+      toast.success('Interview updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['placement-interviews'] });
+      setIsScheduleModalOpen(false);
+      setEditingInterview(null);
+    },
+  });
+
   const uniqueCompanies = useMemo(() => {
-    return Array.from(new Set(interviews.map((i) => i.companyName)));
+    return Array.from(new Set(interviews.map((i) => i.drive?.company?.name).filter(Boolean)));
   }, [interviews]);
 
-  // Filtered Interviews
   const filteredInterviews = useMemo(() => {
     return interviews.filter((item) => {
-      const matchesSearch =
-        item.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.rollNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.interviewerName.toLowerCase().includes(searchQuery.toLowerCase());
+      const studentName = item.application?.student?.user?.name || '';
+      const companyName = item.drive?.company?.name || item.application?.job?.company?.name || '';
+      const interviewer = item.interviewer || '';
 
-      const matchesCompany = companyFilter === 'ALL' || item.companyName === companyFilter;
+      const matchesSearch =
+        studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        interviewer.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesCompany = companyFilter === 'ALL' || companyName === companyFilter;
       const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter;
 
       return matchesSearch && matchesCompany && matchesStatus;
     });
   }, [interviews, searchQuery, companyFilter, statusFilter]);
 
-  // Grouped by Company for List View
-  const groupedByCompany = useMemo(() => {
-    const map: Record<string, InterviewSlot[]> = {};
-    filteredInterviews.forEach((item) => {
-      if (!map[item.companyName]) {
-        map[item.companyName] = [];
-      }
-      map[item.companyName].push(item);
-    });
-    return map;
-  }, [filteredInterviews]);
-
-  // Handlers
   const handleOpenScheduleModal = () => {
     setFormData({
-      studentName: '',
-      rollNumber: '',
-      companyName: '',
-      roundName: 'Round 1: Technical',
-      interviewerName: '',
-      date: '',
-      time: '10:00 AM - 11:00 AM',
-      mode: 'ONLINE',
-      venueOrLink: '',
+      applicationId: applications[0]?.id || '',
+      driveId: drives[0]?.id || '',
+      date: new Date().toISOString().split('T')[0],
+      time: '10:00 AM',
+      duration: '45',
+      interviewer: '',
+      meetingLink: '',
+      roundType: 'Technical',
+      location: '',
+      instructions: '',
+      status: 'SCHEDULED',
+      attendance: 'PENDING',
+      result: 'PENDING',
     });
     setEditingInterview(null);
     setIsScheduleModalOpen(true);
   };
 
-  const handleOpenReschedule = (interview: InterviewSlot) => {
-    setEditingInterview(interview);
+  const handleOpenEdit = (item: Interview) => {
+    setEditingInterview(item);
     setFormData({
-      studentName: interview.studentName,
-      rollNumber: interview.rollNumber,
-      companyName: interview.companyName,
-      roundName: interview.roundName,
-      interviewerName: interview.interviewerName,
-      date: interview.date,
-      time: interview.time,
-      mode: interview.mode,
-      venueOrLink: interview.venueOrLink,
+      applicationId: item.applicationId,
+      driveId: item.driveId || '',
+      date: item.date ? new Date(item.date).toISOString().split('T')[0] : '',
+      time: item.time || '10:00 AM',
+      duration: String(item.duration || 45),
+      interviewer: item.interviewer || '',
+      meetingLink: item.meetingLink || '',
+      roundType: item.roundType || 'Technical',
+      location: item.location || '',
+      instructions: item.instructions || '',
+      status: item.status,
+      attendance: item.attendance || 'PENDING',
+      result: item.result || 'PENDING',
     });
     setIsScheduleModalOpen(true);
   };
 
-  const handleSaveInterview = (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.studentName || !formData.companyName || !formData.date) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
     if (editingInterview) {
-      setInterviews((prev) =>
-        prev.map((item) =>
-          item.id === editingInterview.id
-            ? {
-                ...item,
-                studentName: formData.studentName,
-                rollNumber: formData.rollNumber || item.rollNumber,
-                companyName: formData.companyName,
-                roundName: formData.roundName,
-                interviewerName: formData.interviewerName,
-                date: formData.date,
-                time: formData.time,
-                mode: formData.mode,
-                venueOrLink: formData.venueOrLink,
-              }
-            : item
-        )
-      );
-      toast.success('Interview rescheduled successfully!');
+      updateMutation.mutate({ id: editingInterview.id, data: formData });
     } else {
-      const newSlot: InterviewSlot = {
-        id: `int-${Date.now()}`,
-        studentName: formData.studentName,
-        rollNumber: formData.rollNumber || '2022CSE099',
-        companyName: formData.companyName,
-        roundName: formData.roundName,
-        interviewerName: formData.interviewerName || 'Assigned Interviewer',
+      createMutation.mutate({
+        applicationId: formData.applicationId,
+        driveId: formData.driveId,
         date: formData.date,
-        time: formData.time,
-        mode: formData.mode,
-        venueOrLink: formData.venueOrLink || (formData.mode === 'ONLINE' ? 'https://meet.google.com/new' : 'Lab 1'),
-        status: 'SCHEDULED',
-      };
-      setInterviews((prev) => [newSlot, ...prev]);
-      toast.success('Interview scheduled successfully!');
+        type: formData.roundType,
+        location: formData.location || formData.meetingLink || 'On-campus',
+      });
     }
-
-    setIsScheduleModalOpen(false);
-  };
-
-  const handleToggleCompleted = (id: string) => {
-    setInterviews((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, status: i.status === 'COMPLETED' ? 'SCHEDULED' : 'COMPLETED' } : i))
-    );
-    toast.success('Interview status updated!');
-  };
-
-  const handleSaveFeedback = () => {
-    if (!feedbackInterview) return;
-    setInterviews((prev) =>
-      prev.map((i) => (i.id === feedbackInterview.id ? { ...i, feedback: feedbackText } : i))
-    );
-    toast.success('Interview feedback recorded!');
-    setFeedbackInterview(null);
-    setFeedbackText('');
   };
 
   return (
     <div className="space-y-6 animate-in">
-      {/* Header Banner */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl border border-[hsl(var(--border))] bg-gradient-to-r from-[hsl(var(--surface))] via-[hsl(var(--surface))] to-[hsl(var(--primary)/0.04)] shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <UserCheck className="h-7 w-7 text-[hsl(var(--primary))]" />
             <h1 className="text-2xl font-black text-[hsl(var(--text-primary))] tracking-tight">
-              Interview Scheduler & Management
+              Interview Scheduler Desk
             </h1>
           </div>
           <p className="text-xs text-[hsl(var(--text-secondary))] mt-1">
-            Schedule interview rounds, assign interviewers, manage online meeting links, and record round feedback.
+            Track student interview rounds, mark attendance, record evaluation feedback, and qualified candidates.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* View Toggle */}
-          <div className="p-1 rounded-xl bg-[hsl(var(--muted))] border border-[hsl(var(--border))] flex items-center gap-1 text-xs font-bold">
-            <button
-              onClick={() => setViewMode('LIST')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-                viewMode === 'LIST'
-                  ? 'bg-[hsl(var(--surface))] text-[hsl(var(--primary))] shadow-xs font-extrabold'
-                  : 'text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--text-primary))]'
-              }`}
-            >
-              <List className="h-3.5 w-3.5" />
-              List View
-            </button>
-            <button
-              onClick={() => setViewMode('CALENDAR')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-                viewMode === 'CALENDAR'
-                  ? 'bg-[hsl(var(--surface))] text-[hsl(var(--primary))] shadow-xs font-extrabold'
-                  : 'text-[hsl(var(--text-secondary))] hover:text-[hsl(var(--text-primary))]'
-              }`}
-            >
-              <CalendarIcon className="h-3.5 w-3.5" />
-              Calendar View
-            </button>
-          </div>
-
+        <div className="flex gap-2">
           <button
             onClick={handleOpenScheduleModal}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-hover))] rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-hover))] rounded-lg transition-all cursor-pointer shadow-xs"
           >
             <Plus className="h-4 w-4" />
             Schedule Interview
@@ -304,450 +183,326 @@ export function InterviewsPage() {
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] flex flex-col md:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-[hsl(var(--text-muted))]" />
+      {/* Filter panel */}
+      <div className="p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] flex flex-col md:flex-row gap-4 items-center justify-between shadow-xs">
+        <div className="w-full md:w-80 relative">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-[hsl(var(--text-muted))]" />
           <input
             type="text"
-            placeholder="Search by student, roll number, interviewer, or company..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+            placeholder="Search student, company, interviewer..."
+            className="pl-9 pr-4 py-2 block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
           />
         </div>
 
-        <select
-          value={companyFilter}
-          onChange={(e) => setCompanyFilter(e.target.value)}
-          className="px-3 py-2 text-xs rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
-        >
-          <option value="ALL">All Companies</option>
-          {uniqueCompanies.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-wrap gap-2.5 items-center justify-end">
+          <select
+            value={companyFilter}
+            onChange={(e) => setCompanyFilter(e.target.value)}
+            className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none"
+          >
+            <option value="ALL">All Companies</option>
+            {uniqueCompanies.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 text-xs rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
-        >
-          <option value="ALL">All Statuses</option>
-          <option value="SCHEDULED">SCHEDULED</option>
-          <option value="COMPLETED">COMPLETED</option>
-          <option value="CANCELLED">CANCELLED</option>
-        </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="SCHEDULED">Scheduled</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
       </div>
 
-      {/* Main Content Area */}
-      {viewMode === 'LIST' ? (
-        /* LIST VIEW GROUPED BY COMPANY */
-        isLoadingApplications ? (
-          <LoadingSkeleton count={3} height="h-48" />
-        ) : Object.keys(groupedByCompany).length === 0 ? (
-          <div className="border border-[hsl(var(--border))] rounded-2xl bg-[hsl(var(--surface))] py-12">
-            <EmptyState
-              title="No interview slots found"
-              message="Click 'Schedule Interview' above to create a new slot."
-              icon={<UserCheck className="h-8 w-8 text-[hsl(var(--text-muted))]" />}
-            />
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {Object.entries(groupedByCompany).map(([company, slots]) => (
-              <div
-                key={company}
-                className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-5 shadow-xs space-y-4"
-              >
-                {/* Company Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-[hsl(var(--border))]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] font-black text-sm flex items-center justify-center border border-[hsl(var(--primary)/0.2)]">
-                      {company.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-base text-[hsl(var(--text-primary))]">{company}</h3>
-                      <p className="text-xs text-[hsl(var(--text-secondary))]">{slots.length} Scheduled Rounds</p>
-                    </div>
+      {/* Main Grid View */}
+      {isLoading ? (
+        <LoadingSkeleton count={3} height="h-20" />
+      ) : filteredInterviews.length === 0 ? (
+        <EmptyState
+          title="No interviews scheduled"
+          message="Schedule candidate rounds by choosing applications."
+          icon={<CalendarIcon className="h-8 w-8 text-[hsl(var(--text-muted))]" />}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredInterviews.map((item) => (
+            <div
+              key={item.id}
+              className="p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] hover:border-[hsl(var(--primary)/0.2)] transition-all flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="font-bold text-sm text-[hsl(var(--text-primary))]">
+                      {item.application?.student?.user?.name || 'Candidate'}
+                    </h4>
+                    <p className="text-[10px] text-[hsl(var(--text-secondary))]">{item.application?.student?.rollNumber}</p>
                   </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
+                    item.status === 'COMPLETED'
+                      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                      : item.status === 'CANCELLED'
+                      ? 'bg-rose-500/10 text-rose-600 border-rose-500/20'
+                      : 'bg-sky-500/10 text-sky-600 border-sky-500/20'
+                  }`}>
+                    {item.status}
+                  </span>
                 </div>
 
-                {/* Interview Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {slots.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-xs space-y-3 hover:border-[hsl(var(--primary)/0.3)] transition-all relative"
-                    >
-                      {/* Top bar */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h4 className="font-bold text-sm text-[hsl(var(--text-primary))]">{item.studentName}</h4>
-                          <p className="text-[11px] text-[hsl(var(--text-secondary))] font-mono">{item.rollNumber}</p>
-                        </div>
-
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                            item.status === 'COMPLETED'
-                              ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                              : item.status === 'CANCELLED'
-                              ? 'bg-rose-500/10 text-rose-600 border-rose-500/20'
-                              : 'bg-sky-500/10 text-sky-600 border-sky-500/20'
-                          }`}
-                        >
-                          {item.status}
-                        </span>
-                      </div>
-
-                      {/* Round & Interviewer */}
-                      <div className="p-2.5 rounded-lg bg-[hsl(var(--muted)/0.4)] border border-[hsl(var(--border)/0.5)] space-y-1 text-xs">
-                        <p className="font-bold text-[hsl(var(--primary))]">{item.roundName}</p>
-                        <p className="text-[11px] text-[hsl(var(--text-secondary))] flex items-center gap-1">
-                          <User className="h-3 w-3 text-[hsl(var(--text-muted))]" />
-                          Interviewer: <span className="font-semibold">{item.interviewerName}</span>
-                        </p>
-                      </div>
-
-                      {/* Time & Venue */}
-                      <div className="space-y-1.5 text-xs text-[hsl(var(--text-secondary))]">
-                        <div className="flex items-center gap-2 font-medium">
-                          <Clock className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
-                          <span>
-                            {item.date} • {item.time}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2 font-medium">
-                          {item.mode === 'ONLINE' ? (
-                            <Video className="h-3.5 w-3.5 text-emerald-500" />
-                          ) : (
-                            <MapPin className="h-3.5 w-3.5 text-amber-500" />
-                          )}
-                          <span className="truncate">{item.venueOrLink}</span>
-                        </div>
-                      </div>
-
-                      {/* Feedback snippet */}
-                      {item.feedback && (
-                        <div className="p-2 rounded-md bg-amber-500/05 border border-amber-500/20 text-[11px] text-[hsl(var(--text-secondary))] italic flex items-start gap-1.5">
-                          <MessageSquare className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
-                          <span className="line-clamp-2">{item.feedback}</span>
-                        </div>
-                      )}
-
-                      {/* Card Actions */}
-                      <div className="pt-2 border-t border-[hsl(var(--border))] flex items-center justify-between text-xs">
-                        <button
-                          onClick={() => {
-                            setFeedbackInterview(item);
-                            setFeedbackText(item.feedback || '');
-                          }}
-                          className="text-[hsl(var(--primary))] font-bold hover:underline inline-flex items-center gap-1"
-                        >
-                          <MessageSquare className="h-3.5 w-3.5" />
-                          Feedback
-                        </button>
-
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => handleOpenReschedule(item)}
-                            className="p-1.5 rounded-md border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]"
-                            title="Reschedule"
-                          >
-                            <Edit className="h-3.5 w-3.5 text-[hsl(var(--text-muted))]" />
-                          </button>
-                          <button
-                            onClick={() => handleToggleCompleted(item.id)}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                              item.status === 'COMPLETED'
-                                ? 'bg-slate-500/10 text-slate-600'
-                                : 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
-                            }`}
-                          >
-                            {item.status === 'COMPLETED' ? 'Mark Scheduled' : 'Mark Complete'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="pt-2 border-t border-[hsl(var(--border))/0.6] space-y-1.5 text-xs text-[hsl(var(--text-secondary))] font-medium">
+                  <p className="font-semibold text-[hsl(var(--text-primary))]">
+                    {item.drive?.company?.name || item.application?.job?.company?.name} &bull; {item.roundType}
+                  </p>
+                  <p className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-[hsl(var(--text-muted))]" />
+                    {new Date(item.date).toLocaleDateString()} at {item.time} ({item.duration}m)
+                  </p>
+                  <p className="flex items-center gap-1.5">
+                    {item.meetingLink ? (
+                      <>
+                        <Video className="h-4 w-4 text-[hsl(var(--text-muted))]" />
+                        <a href={item.meetingLink} target="_blank" rel="noreferrer" className="text-[hsl(var(--primary))] hover:underline">
+                          Online Video Link
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="h-4 w-4 text-[hsl(var(--text-muted))]" />
+                        {item.location || 'On-campus'}
+                      </>
+                    )}
+                  </p>
+                  <p className="text-[10px] text-[hsl(var(--text-muted))] italic">
+                    Interviewer: {item.interviewer}
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        )
-      ) : (
-        /* CALENDAR VIEW GRID */
-        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-6 shadow-xs space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-[hsl(var(--border))]">
-            <h3 className="font-extrabold text-base text-[hsl(var(--text-primary))] flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5 text-[hsl(var(--primary))]" />
-              August 2026 Interview Schedule Grid
-            </h3>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Completed
-              </span>
-              <span className="flex items-center gap-1 text-[11px] font-bold text-sky-600">
-                <span className="h-2 w-2 rounded-full bg-sky-500" /> Scheduled
-              </span>
-            </div>
-          </div>
 
-          {/* Monthly Days Grid */}
-          <div className="grid grid-cols-7 gap-3 text-center text-xs font-bold text-[hsl(var(--text-muted))] uppercase">
-            <div>Mon</div>
-            <div>Tue</div>
-            <div>Wed</div>
-            <div>Thu</div>
-            <div>Fri</div>
-            <div>Sat</div>
-            <div>Sun</div>
-          </div>
+              <div className="pt-3 border-t border-[hsl(var(--border))/0.6] flex justify-between items-center text-xs">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  item.result === 'QUALIFIED'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : item.result === 'REJECTED'
+                    ? 'bg-rose-100 text-rose-700'
+                    : 'bg-amber-100 text-amber-700'
+                }`}>
+                  Result: {item.result}
+                </span>
 
-          <div className="grid grid-cols-7 gap-3">
-            {Array.from({ length: 31 }, (_, i) => {
-              const day = i + 1;
-              const dateStr = `2026-08-${day < 10 ? '0' + day : day}`;
-              const dayInterviews = filteredInterviews.filter((item) => item.date === dateStr);
-
-              return (
-                <div
-                  key={day}
-                  className={`min-h-[100px] p-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] space-y-1.5 ${
-                    dayInterviews.length > 0 ? 'ring-1 ring-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.02)]' : ''
-                  }`}
+                <button
+                  onClick={() => handleOpenEdit(item)}
+                  className="inline-flex items-center gap-1 text-[hsl(var(--primary))] font-bold hover:underline cursor-pointer"
                 >
-                  <div className="text-right text-[11px] font-bold text-[hsl(var(--text-muted))]">{day}</div>
-                  {dayInterviews.map((slot) => (
-                    <div
-                      key={slot.id}
-                      onClick={() => handleOpenReschedule(slot)}
-                      className="p-1.5 rounded-lg text-[10px] font-bold bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] border border-[hsl(var(--primary)/0.2)] truncate cursor-pointer hover:scale-102 transition-transform"
-                      title={`${slot.studentName} (${slot.companyName})`}
-                    >
-                      <p className="truncate font-extrabold">{slot.companyName}</p>
-                      <p className="truncate text-[9px] text-[hsl(var(--text-secondary))]">{slot.studentName}</p>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
+                  <Edit className="h-3.5 w-3.5" />
+                  Update Round
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Schedule / Reschedule Modal */}
       {isScheduleModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-[hsl(var(--surface))] rounded-2xl border border-[hsl(var(--border))] max-w-lg w-full p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setIsScheduleModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-muted))]"
-            >
+          <div className="bg-[hsl(var(--surface))] rounded-2xl border border-[hsl(var(--border))] max-w-md w-full p-6 shadow-xl relative max-h-[85vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+            <button onClick={() => setIsScheduleModalOpen(false)} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-muted))]">
               <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-2 pb-4 border-b border-[hsl(var(--border))]">
-              <CalendarIcon className="h-5 w-5 text-[hsl(var(--primary))]" />
-              <h3 className="font-bold text-base text-[hsl(var(--text-primary))]">
-                {editingInterview ? 'Reschedule Interview Round' : 'Schedule Interview Round'}
-              </h3>
-            </div>
+            <h3 className="font-bold text-base text-[hsl(var(--text-primary))] pb-3 border-b border-[hsl(var(--border))]">
+              {editingInterview ? 'Update Scheduled Round' : 'Schedule New Round'}
+            </h3>
 
-            <form onSubmit={handleSaveInterview} className="space-y-4 mt-4 text-xs">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSave} className="space-y-4 mt-4 text-xs">
+              {!editingInterview && (
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Student Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Rakshana S."
-                    value={formData.studentName}
-                    onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
-                  />
+                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">Candidate Application</label>
+                  <select
+                    value={formData.applicationId}
+                    onChange={(e) => setFormData((p) => ({ ...p, applicationId: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none"
+                  >
+                    {applications.map((app) => (
+                      <option key={app.id} value={app.id}>
+                        {app.student?.user?.name} - {app.job?.company?.name} ({app.job?.title})
+                      </option>
+                    ))}
+                  </select>
                 </div>
+              )}
 
-                <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Company Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Google India"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
-                  />
-                </div>
+              <div>
+                <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">Associated Drive (Optional)</label>
+                <select
+                  value={formData.driveId}
+                  onChange={(e) => setFormData((p) => ({ ...p, driveId: e.target.value }))}
+                  className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none"
+                >
+                  <option value="">No Associated Drive</option>
+                  {drives.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.title}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Interview Round
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Round 2: Tech & System Design"
-                    value={formData.roundName}
-                    onChange={(e) => setFormData({ ...formData, roundName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Interviewer Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Sundar Pitchai"
-                    value={formData.interviewerName}
-                    onChange={(e) => setFormData({ ...formData, interviewerName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Interview Date *
-                  </label>
+                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">Date</label>
                   <input
                     type="date"
                     required
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    onChange={(e) => setFormData((p) => ({ ...p, date: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none"
                   />
                 </div>
-
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Time Slot
-                  </label>
+                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">Time</label>
                   <input
                     type="text"
-                    placeholder="e.g. 10:00 AM - 11:00 AM"
+                    required
                     value={formData.time}
-                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    onChange={(e) => setFormData((p) => ({ ...p, time: e.target.value }))}
+                    placeholder="e.g. 10:00 AM"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">Mode</label>
+                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">Duration (Minutes)</label>
+                  <input
+                    type="number"
+                    value={formData.duration}
+                    onChange={(e) => setFormData((p) => ({ ...p, duration: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">Round Type</label>
                   <select
-                    value={formData.mode}
-                    onChange={(e) => setFormData({ ...formData, mode: e.target.value as 'ONLINE' | 'OFFLINE' })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    value={formData.roundType}
+                    onChange={(e) => setFormData((p) => ({ ...p, roundType: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none"
                   >
-                    <option value="ONLINE">ONLINE (Virtual Meeting)</option>
-                    <option value="OFFLINE">OFFLINE (In-person Campus)</option>
+                    <option value="Technical">Technical</option>
+                    <option value="Coding">Coding</option>
+                    <option value="Managerial">Managerial</option>
+                    <option value="HR">HR</option>
+                    <option value="Final">Final</option>
                   </select>
                 </div>
+              </div>
 
+              <div>
+                <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">Interviewer Name</label>
+                <input
+                  type="text"
+                  value={formData.interviewer}
+                  onChange={(e) => setFormData((p) => ({ ...p, interviewer: e.target.value }))}
+                  placeholder="e.g. Vikram (Team Lead)"
+                  className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    {formData.mode === 'ONLINE' ? 'Meeting Link' : 'Campus Venue Room'}
-                  </label>
+                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">Meeting Link</label>
                   <input
                     type="text"
-                    placeholder={
-                      formData.mode === 'ONLINE' ? 'https://meet.google.com/xyz' : 'Placement Room 3, Block B'
-                    }
-                    value={formData.venueOrLink}
-                    onChange={(e) => setFormData({ ...formData, venueOrLink: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    value={formData.meetingLink}
+                    onChange={(e) => setFormData((p) => ({ ...p, meetingLink: e.target.value }))}
+                    placeholder="https://meet.google.com/..."
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">Location (Offline)</label>
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
+                    placeholder="Computer Center Lab 2"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-[hsl(var(--border))]">
+              {editingInterview && (
+                <div className="grid grid-cols-3 gap-3 p-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))/0.2]">
+                  <div>
+                    <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">Status</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData((p) => ({ ...p, status: e.target.value }))}
+                      className="w-full bg-transparent border-0 font-bold focus:ring-0 p-0 text-xs text-[hsl(var(--text-primary))]"
+                    >
+                      <option value="SCHEDULED">SCHEDULED</option>
+                      <option value="COMPLETED">COMPLETED</option>
+                      <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">Attendance</label>
+                    <select
+                      value={formData.attendance}
+                      onChange={(e) => setFormData((p) => ({ ...p, attendance: e.target.value }))}
+                      className="w-full bg-transparent border-0 font-bold focus:ring-0 p-0 text-xs text-[hsl(var(--text-primary))]"
+                    >
+                      <option value="PENDING">PENDING</option>
+                      <option value="PRESENT">PRESENT</option>
+                      <option value="ABSENT">ABSENT</option>
+                      <option value="LATE">LATE</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">Result</label>
+                    <select
+                      value={formData.result}
+                      onChange={(e) => setFormData((p) => ({ ...p, result: e.target.value }))}
+                      className="w-full bg-transparent border-0 font-bold focus:ring-0 p-0 text-xs text-[hsl(var(--text-primary))]"
+                    >
+                      <option value="PENDING">PENDING</option>
+                      <option value="QUALIFIED">QUALIFIED</option>
+                      <option value="REJECTED">REJECTED</option>
+                      <option value="HOLD">HOLD</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 justify-end pt-3 border-t border-[hsl(var(--border))]">
                 <button
                   type="button"
                   onClick={() => setIsScheduleModalOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-[hsl(var(--border))] text-[hsl(var(--text-primary))] font-bold cursor-pointer"
+                  className="py-2 px-4 font-bold rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-primary))] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[hsl(var(--primary))] text-white font-bold cursor-pointer shadow-xs"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                  className="py-2 px-4 font-bold rounded-lg bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-hover))] text-white cursor-pointer shadow-xs disabled:opacity-50"
                 >
-                  {editingInterview ? 'Save Changes' : 'Confirm Schedule'}
+                  Save Schedule
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Feedback Drawer / Modal */}
-      {feedbackInterview && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-[hsl(var(--surface))] rounded-2xl border border-[hsl(var(--border))] max-w-md w-full p-6 shadow-xl relative">
-            <button
-              onClick={() => setFeedbackInterview(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[hsl(var(--muted))]"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="flex items-center gap-2 pb-4 border-b border-[hsl(var(--border))]">
-              <MessageSquare className="h-5 w-5 text-amber-500" />
-              <h3 className="font-bold text-base text-[hsl(var(--text-primary))]">Interview Round Feedback</h3>
-            </div>
-
-            <div className="space-y-4 mt-4 text-xs">
-              <div className="p-3 rounded-xl bg-[hsl(var(--muted)/0.5)] border border-[hsl(var(--border))]">
-                <p className="font-bold text-[hsl(var(--text-primary))]">{feedbackInterview.studentName}</p>
-                <p className="text-[11px] text-[hsl(var(--text-secondary))]">
-                  {feedbackInterview.companyName} • {feedbackInterview.roundName}
-                </p>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                  Interviewer Feedback Notes
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="Record strengths, weak areas, coding problem feedback, recommendation..."
-                  value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none resize-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-[hsl(var(--border))]">
-                <button
-                  type="button"
-                  onClick={() => setFeedbackInterview(null)}
-                  className="px-4 py-2 rounded-lg border border-[hsl(var(--border))] text-[hsl(var(--text-primary))] font-bold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveFeedback}
-                  className="px-4 py-2 rounded-lg bg-[hsl(var(--primary))] text-white font-bold cursor-pointer shadow-xs"
-                >
-                  Save Feedback
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}

@@ -1,285 +1,220 @@
 import { useState, useMemo } from 'react';
-import { usePlacementData } from '../hooks/usePlacementData';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { placementService } from '../services/placement.service';
 import { LoadingSkeleton, EmptyState } from '@/components/common';
 import { toast } from '@/store';
 import {
   Calendar,
-  Building2,
   Briefcase,
   MapPin,
-  Clock,
   GraduationCap,
   Plus,
   Search,
-  Filter,
   Users,
   X,
   Edit2,
-  CheckCircle2,
-  XCircle,
-  Eye,
   DollarSign,
+  Copy,
+  Trash2,
+  Check,
+  AlertCircle,
+  Download,
 } from 'lucide-react';
-
-export interface PlacementDriveItem {
-  id: string;
-  title: string;
-  companyName: string;
-  companyLogo?: string;
-  jobRole: string;
-  ctc: string;
-  driveDate: string;
-  deadline: string;
-  venue: string;
-  minCgpa: number;
-  eligibleBranches: string[];
-  status: 'UPCOMING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
-  applicantsCount: number;
-  description?: string;
-}
-
-const INITIAL_DRIVES: PlacementDriveItem[] = [
-  {
-    id: 'drive-1',
-    title: 'Google Placement Drive 2026',
-    companyName: 'Google India',
-    jobRole: 'Software Development Engineer',
-    ctc: '₹28 - ₹34 LPA',
-    driveDate: '2026-08-15',
-    deadline: '2026-08-10',
-    venue: 'Auditorium Block A / Online Hackerrank',
-    minCgpa: 8.0,
-    eligibleBranches: ['CSE', 'IT', 'ECE'],
-    status: 'ONGOING',
-    applicantsCount: 142,
-    description: 'Campus hiring drive for SDE-1 roles across Google Bangalore and Hyderabad offices.',
-  },
-  {
-    id: 'drive-2',
-    title: 'Microsoft Graduate Hiring',
-    companyName: 'Microsoft',
-    jobRole: 'Full Stack Engineer',
-    ctc: '₹24 - ₹28 LPA',
-    driveDate: '2026-08-22',
-    deadline: '2026-08-18',
-    venue: 'Online Teams & On-Campus Lab 3',
-    minCgpa: 7.5,
-    eligibleBranches: ['CSE', 'IT', 'ECE', 'EEE'],
-    status: 'UPCOMING',
-    applicantsCount: 98,
-    description: 'Hiring software engineers for Cloud & AI organization in Microsoft India.',
-  },
-  {
-    id: 'drive-3',
-    title: 'Amazon Operations & Dev Recruitment',
-    companyName: 'Amazon Web Services',
-    jobRole: 'Cloud Solution Architect',
-    ctc: '₹20 - ₹25 LPA',
-    driveDate: '2026-07-20',
-    deadline: '2026-07-15',
-    venue: 'Virtual Drive via Chime',
-    minCgpa: 7.0,
-    eligibleBranches: ['CSE', 'IT', 'ECE', 'MECH', 'CIVIL'],
-    status: 'COMPLETED',
-    applicantsCount: 210,
-    description: 'Completed recruitment drive for AWS Cloud Architect roles.',
-  },
-  {
-    id: 'drive-4',
-    title: 'TCS Digital Recruitment Drive',
-    companyName: 'TCS Innovation Labs',
-    jobRole: 'Digital Engineer',
-    ctc: '₹9 - ₹12 LPA',
-    driveDate: '2026-09-01',
-    deadline: '2026-08-25',
-    venue: 'Computer Center Block C',
-    minCgpa: 6.5,
-    eligibleBranches: ['ALL BRANCHES'],
-    status: 'UPCOMING',
-    applicantsCount: 310,
-    description: 'Mass recruitment drive for TCS Digital and Innovator profiles.',
-  },
-];
+import type { PlacementDrive } from '@/types';
 
 export function PlacementDrivesPage() {
-  const { isLoadingApplications } = usePlacementData();
-  const [drives, setDrives] = useState<PlacementDriveItem[]>(INITIAL_DRIVES);
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [companyFilter, setCompanyFilter] = useState<string>('ALL');
-  const [departmentFilter, setDepartmentFilter] = useState<string>('ALL');
 
-  // Modals & Drawers state
+  // Modal / Detail state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingDrive, setEditingDrive] = useState<PlacementDriveItem | null>(null);
-  const [viewingApplicantsDrive, setViewingApplicantsDrive] = useState<PlacementDriveItem | null>(null);
+  const [editingDrive, setEditingDrive] = useState<PlacementDrive | null>(null);
+  const [viewingEligibilityDrive, setViewingEligibilityDrive] = useState<PlacementDrive | null>(null);
 
-  // Form State for Create/Edit
+  // Form State
   const [formData, setFormData] = useState({
-    companyName: '',
     title: '',
-    jobRole: '',
-    ctc: '',
-    driveDate: '',
-    deadline: '',
-    venue: '',
-    minCgpa: '7.0',
-    eligibleBranches: 'CSE, IT, ECE',
     description: '',
+    companyId: '',
+    jobRole: '',
+    package: '',
+    location: '',
+    employmentType: 'Full-time',
+    registrationDeadline: '',
+    startDate: '',
+    endDate: '',
+    departmentsEligible: '',
+    minCgpa: '6.0',
+    maxBacklogs: '0',
+    requiredSkills: '',
+    batchYear: new Date().getFullYear().toString(),
+    openings: '1',
+    bondDetails: '',
+    requiredDocuments: 'Resume, Mark Sheets',
   });
 
-  // Filtered drives calculation
+  // Queries
+  const { data: drives = [], isLoading: isLoadingDrives } = useQuery({
+    queryKey: ['placement-drives'],
+    queryFn: () => placementService.getDrives(),
+  });
+
+  const { data: stats } = useQuery({
+    queryKey: ['placement-drive-stats'],
+    queryFn: () => placementService.getDriveStats(),
+  });
+
+  const { data: companies = [] } = useQuery({
+    queryKey: ['placement-companies-list'],
+    queryFn: () => placementService.getCompanies(),
+  });
+
+  const { data: eligibilityData, isLoading: isLoadingEligibility } = useQuery({
+    queryKey: ['drive-eligibility', viewingEligibilityDrive?.id],
+    queryFn: () => placementService.evaluateEligibility(viewingEligibilityDrive!.id),
+    enabled: !!viewingEligibilityDrive,
+  });
+
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: placementService.createDrive,
+    onSuccess: () => {
+      toast.success('Placement drive created successfully');
+      queryClient.invalidateQueries({ queryKey: ['placement-drives'] });
+      queryClient.invalidateQueries({ queryKey: ['placement-drive-stats'] });
+      setIsCreateModalOpen(false);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => placementService.updateDrive(id, data),
+    onSuccess: () => {
+      toast.success('Placement drive updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['placement-drives'] });
+      setIsCreateModalOpen(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: placementService.deleteDrive,
+    onSuccess: () => {
+      toast.success('Placement drive deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['placement-drives'] });
+      queryClient.invalidateQueries({ queryKey: ['placement-drive-stats'] });
+    },
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: placementService.duplicateDrive,
+    onSuccess: () => {
+      toast.success('Placement drive duplicated successfully');
+      queryClient.invalidateQueries({ queryKey: ['placement-drives'] });
+      queryClient.invalidateQueries({ queryKey: ['placement-drive-stats'] });
+    },
+  });
+
+  // Filter calculation
   const filteredDrives = useMemo(() => {
     return drives.filter((drive) => {
+      const companyName = drive.company?.name || '';
       const matchesSearch =
         drive.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        drive.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        drive.jobRole.toLowerCase().includes(searchQuery.toLowerCase());
+        companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (drive.jobRole || '').toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus = statusFilter === 'ALL' || drive.status === statusFilter;
-      const matchesCompany = companyFilter === 'ALL' || drive.companyName === companyFilter;
-      const matchesDept =
-        departmentFilter === 'ALL' ||
-        drive.eligibleBranches.includes(departmentFilter) ||
-        drive.eligibleBranches.includes('ALL BRANCHES');
-
-      return matchesSearch && matchesStatus && matchesCompany && matchesDept;
+      return matchesSearch && matchesStatus;
     });
-  }, [drives, searchQuery, statusFilter, companyFilter, departmentFilter]);
+  }, [drives, searchQuery, statusFilter]);
 
-  const uniqueCompanies = useMemo(() => {
-    return Array.from(new Set(drives.map((d) => d.companyName)));
-  }, [drives]);
-
-  // Handlers
   const handleOpenCreateModal = () => {
     setFormData({
-      companyName: '',
       title: '',
-      jobRole: '',
-      ctc: '',
-      driveDate: '',
-      deadline: '',
-      venue: '',
-      minCgpa: '7.0',
-      eligibleBranches: 'CSE, IT, ECE',
       description: '',
+      companyId: companies[0]?.id || '',
+      jobRole: '',
+      package: '',
+      location: '',
+      employmentType: 'Full-time',
+      registrationDeadline: '',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: '',
+      departmentsEligible: 'CSE, IT, ECE',
+      minCgpa: '6.0',
+      maxBacklogs: '0',
+      requiredSkills: 'React, Node, Database',
+      batchYear: new Date().getFullYear().toString(),
+      openings: '1',
+      bondDetails: '',
+      requiredDocuments: 'Resume, Mark Sheets',
     });
     setEditingDrive(null);
     setIsCreateModalOpen(true);
   };
 
-  const handleOpenEditModal = (drive: PlacementDriveItem) => {
+  const handleOpenEditModal = (drive: PlacementDrive) => {
     setEditingDrive(drive);
     setFormData({
-      companyName: drive.companyName,
       title: drive.title,
-      jobRole: drive.jobRole,
-      ctc: drive.ctc,
-      driveDate: drive.driveDate,
-      deadline: drive.deadline,
-      venue: drive.venue,
-      minCgpa: String(drive.minCgpa),
-      eligibleBranches: drive.eligibleBranches.join(', '),
       description: drive.description || '',
+      companyId: drive.companyId,
+      jobRole: drive.jobRole || '',
+      package: String(drive.package || ''),
+      location: drive.location || '',
+      employmentType: drive.employmentType || 'Full-time',
+      registrationDeadline: drive.registrationDeadline ? new Date(drive.registrationDeadline).toISOString().split('T')[0] : '',
+      startDate: drive.startDate ? new Date(drive.startDate).toISOString().split('T')[0] : '',
+      endDate: drive.endDate ? new Date(drive.endDate).toISOString().split('T')[0] : '',
+      departmentsEligible: drive.departmentsEligible?.join(', ') || '',
+      minCgpa: String(drive.minCgpa || '6.0'),
+      maxBacklogs: String(drive.maxBacklogs || '0'),
+      requiredSkills: drive.requiredSkills?.join(', ') || '',
+      batchYear: String(drive.batchYear || new Date().getFullYear()),
+      openings: String(drive.openings || '1'),
+      bondDetails: drive.bondDetails || '',
+      requiredDocuments: drive.requiredDocuments?.join(', ') || '',
     });
     setIsCreateModalOpen(true);
   };
 
   const handleSaveDrive = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.companyName || !formData.jobRole || !formData.driveDate) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    const branchesArray = formData.eligibleBranches
-      .split(',')
-      .map((b) => b.trim().toUpperCase())
-      .filter(Boolean);
+    const payload = {
+      ...formData,
+      departmentsEligible: formData.departmentsEligible.split(',').map((s) => s.trim()).filter(Boolean),
+      requiredSkills: formData.requiredSkills.split(',').map((s) => s.trim()).filter(Boolean),
+      requiredDocuments: formData.requiredDocuments.split(',').map((s) => s.trim()).filter(Boolean),
+    };
 
     if (editingDrive) {
-      setDrives((prev) =>
-        prev.map((d) =>
-          d.id === editingDrive.id
-            ? {
-                ...d,
-                companyName: formData.companyName,
-                title: formData.title || `${formData.companyName} Drive`,
-                jobRole: formData.jobRole,
-                ctc: formData.ctc,
-                driveDate: formData.driveDate,
-                deadline: formData.deadline,
-                venue: formData.venue,
-                minCgpa: parseFloat(formData.minCgpa) || 6.0,
-                eligibleBranches: branchesArray.length ? branchesArray : ['ALL BRANCHES'],
-                description: formData.description,
-              }
-            : d
-        )
-      );
-      toast.success('Placement drive updated successfully!');
+      updateMutation.mutate({ id: editingDrive.id, data: payload });
     } else {
-      const newDrive: PlacementDriveItem = {
-        id: `drive-${Date.now()}`,
-        title: formData.title || `${formData.companyName} Recruitment Drive`,
-        companyName: formData.companyName,
-        jobRole: formData.jobRole,
-        ctc: formData.ctc || 'As per norms',
-        driveDate: formData.driveDate,
-        deadline: formData.deadline || formData.driveDate,
-        venue: formData.venue || 'Campus Auditorium',
-        minCgpa: parseFloat(formData.minCgpa) || 6.0,
-        eligibleBranches: branchesArray.length ? branchesArray : ['ALL BRANCHES'],
-        status: 'UPCOMING',
-        applicantsCount: 0,
-        description: formData.description,
-      };
-      setDrives((prev) => [newDrive, ...prev]);
-      toast.success('New Placement Drive created!');
+      createMutation.mutate(payload);
     }
-
-    setIsCreateModalOpen(false);
   };
 
-  const handleCloseDrive = (id: string) => {
-    setDrives((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: d.status === 'COMPLETED' ? 'ONGOING' : 'COMPLETED' } : d))
-    );
-    toast.success('Drive status updated!');
-  };
+  const handleExportCSV = () => {
+    const headers = ['Drive Title', 'Company', 'Role', 'Package (LPA)', 'Location', 'Type', 'Deadline', 'Eligible Depts', 'Min CGPA'];
+    const rows = filteredDrives.map((d) => [
+      `"${d.title}"`,
+      `"${d.company?.name || ''}"`,
+      `"${d.jobRole || ''}"`,
+      `"${d.package || 0}"`,
+      `"${d.location || ''}"`,
+      `"${d.employmentType || ''}"`,
+      `"${d.registrationDeadline ? new Date(d.registrationDeadline).toLocaleDateString() : 'N/A'}"`,
+      `"${d.departmentsEligible?.join(', ')}"`,
+      `"${d.minCgpa || 0}"`,
+    ]);
 
-  const getStatusBadge = (status: PlacementDriveItem['status']) => {
-    switch (status) {
-      case 'ONGOING':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-            ONGOING
-          </span>
-        );
-      case 'UPCOMING':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-            <Clock className="h-3 w-3" />
-            UPCOMING
-          </span>
-        );
-      case 'COMPLETED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20">
-            <CheckCircle2 className="h-3 w-3" />
-            COMPLETED
-          </span>
-        );
-      case 'CANCELLED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-            <XCircle className="h-3 w-3" />
-            CANCELLED
-          </span>
-        );
-    }
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const link = document.createElement('a');
+    link.setAttribute('href', encodeURI(csvContent));
+    link.setAttribute('download', `placement_drives_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -294,14 +229,21 @@ export function PlacementDrivesPage() {
             </h1>
           </div>
           <p className="text-xs text-[hsl(var(--text-secondary))] mt-1">
-            Schedule, manage, and monitor corporate campus placement drives and candidate registrations.
+            Schedule, manage, and monitor corporate campus placement drives and candidate eligibility rules.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="p-2.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-primary))] cursor-pointer transition-colors"
+            title="Export CSV"
+          >
+            <Download className="h-4 w-4" />
+          </button>
           <button
             onClick={handleOpenCreateModal}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-hover))] rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-hover))] rounded-lg transition-all cursor-pointer shadow-xs"
           >
             <Plus className="h-4 w-4" />
             Create Drive
@@ -309,241 +251,147 @@ export function PlacementDrivesPage() {
         </div>
       </div>
 
-      {/* Stats Summary Strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]">
-            <Calendar className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-[hsl(var(--text-secondary))] uppercase">Total Drives</p>
-            <p className="text-xl font-extrabold text-[hsl(var(--text-primary))]">{drives.length}</p>
-          </div>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-xs flex flex-col justify-between h-24">
+          <span className="text-[10px] font-bold text-[hsl(var(--text-secondary))] uppercase tracking-wider">Total Drives</span>
+          <span className="text-2xl font-black text-[hsl(var(--text-primary))] mt-2">{stats?.total || 0}</span>
         </div>
-
-        <div className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-500">
-            <CheckCircle2 className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-[hsl(var(--text-secondary))] uppercase">Active Drives</p>
-            <p className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
-              {drives.filter((d) => d.status === 'ONGOING' || d.status === 'UPCOMING').length}
-            </p>
-          </div>
+        <div className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-xs flex flex-col justify-between h-24">
+          <span className="text-[10px] font-bold text-[hsl(var(--text-secondary))] uppercase tracking-wider">Active</span>
+          <span className="text-2xl font-black text-emerald-600 mt-2">{stats?.active || 0}</span>
         </div>
-
-        <div className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-sky-500/10 text-sky-500">
-            <Users className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-[hsl(var(--text-secondary))] uppercase">Total Applicants</p>
-            <p className="text-xl font-extrabold text-sky-600 dark:text-sky-400">
-              {drives.reduce((acc, curr) => acc + curr.applicantsCount, 0)}
-            </p>
-          </div>
+        <div className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-xs flex flex-col justify-between h-24">
+          <span className="text-[10px] font-bold text-[hsl(var(--text-secondary))] uppercase tracking-wider">Upcoming</span>
+          <span className="text-2xl font-black text-sky-500 mt-2">{stats?.upcoming || 0}</span>
         </div>
-
-        <div className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-500">
-            <DollarSign className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold text-[hsl(var(--text-secondary))] uppercase">Top Package</p>
-            <p className="text-xl font-extrabold text-amber-600 dark:text-amber-400">₹34 LPA</p>
-          </div>
+        <div className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-xs flex flex-col justify-between h-24">
+          <span className="text-[10px] font-bold text-[hsl(var(--text-secondary))] uppercase tracking-wider">Completed</span>
+          <span className="text-2xl font-black text-slate-500 mt-2">{stats?.completed || 0}</span>
+        </div>
+        <div className="p-4 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-xs flex flex-col justify-between h-24">
+          <span className="text-[10px] font-bold text-[hsl(var(--text-secondary))] uppercase tracking-wider">Cancelled</span>
+          <span className="text-2xl font-black text-rose-500 mt-2">{stats?.cancelled || 0}</span>
         </div>
       </div>
 
-      {/* Filter Controls Bar */}
-      <div className="p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] space-y-3">
-        <div className="flex flex-col md:flex-row gap-3">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-[hsl(var(--text-muted))]" />
-            <input
-              type="text"
-              placeholder="Search by company, role, or drive title..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
-            />
-          </div>
-
-          {/* Company Filter */}
-          <select
-            value={companyFilter}
-            onChange={(e) => setCompanyFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
-          >
-            <option value="ALL">All Companies</option>
-            {uniqueCompanies.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
-          {/* Department Filter */}
-          <select
-            value={departmentFilter}
-            onChange={(e) => setDepartmentFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
-          >
-            <option value="ALL">All Departments</option>
-            <option value="CSE">Computer Science (CSE)</option>
-            <option value="IT">Information Tech (IT)</option>
-            <option value="ECE">Electronics (ECE)</option>
-            <option value="EEE">Electrical (EEE)</option>
-            <option value="MECH">Mechanical</option>
-          </select>
-        </div>
-
-        {/* Status Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[hsl(var(--border)/0.5)] text-xs">
-          <span className="text-[11px] font-bold text-[hsl(var(--text-muted))] uppercase mr-2 flex items-center gap-1">
-            <Filter className="h-3 w-3" /> Status:
-          </span>
-          {['ALL', 'ONGOING', 'UPCOMING', 'COMPLETED', 'CANCELLED'].map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                statusFilter === st
-                  ? 'bg-[hsl(var(--primary))] text-white shadow-xs'
-                  : 'text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--muted))]'
-              }`}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Drives Grid */}
-      {isLoadingApplications ? (
-        <LoadingSkeleton count={3} height="h-64" />
-      ) : filteredDrives.length === 0 ? (
-        <div className="border border-[hsl(var(--border))] rounded-2xl bg-[hsl(var(--surface))] py-12">
-          <EmptyState
-            title="No placement drives found"
-            message="Try adjusting your filters or create a new placement drive."
-            icon={<Calendar className="h-8 w-8 text-[hsl(var(--text-muted))]" />}
+      {/* Filter panel */}
+      <div className="p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] flex flex-col md:flex-row gap-4 items-center justify-between shadow-xs">
+        <div className="w-full md:w-80 relative">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-[hsl(var(--text-muted))]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search drives, roles, companies..."
+            className="pl-9 pr-4 py-2 block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
           />
         </div>
+
+        <div className="flex gap-2">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-xs text-[hsl(var(--text-primary))] focus:outline-none"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="UPCOMING">Upcoming</option>
+            <option value="ONGOING">Ongoing</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Grid of Drives */}
+      {isLoadingDrives ? (
+        <LoadingSkeleton count={3} height="h-44" />
+      ) : filteredDrives.length === 0 ? (
+        <EmptyState
+          title="No drives scheduled"
+          message="Schedule your first campus placement drive by clicking the create button."
+          icon={<Calendar className="h-8 w-8 text-[hsl(var(--text-muted))]" />}
+        />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredDrives.map((drive) => (
             <div
               key={drive.id}
-              className="p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-xs flex flex-col justify-between hover:border-[hsl(var(--primary)/0.3)] transition-all space-y-4 relative group"
+              className="p-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-xs flex flex-col justify-between hover:border-[hsl(var(--primary)/0.2)] transition-all space-y-5"
             >
-              {/* Card Header */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[hsl(var(--primary)/0.15)] to-[hsl(var(--accent)/0.15)] text-[hsl(var(--primary))] flex items-center justify-center font-black text-lg border border-[hsl(var(--primary)/0.2)] shrink-0 shadow-xs">
-                    {drive.companyName.substring(0, 2).toUpperCase()}
+              <div className="space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-[hsl(var(--primary)/0.08)] flex items-center justify-center shrink-0 text-[hsl(var(--primary))] font-bold text-sm">
+                      {drive.company?.name.substring(0, 2).toUpperCase() || 'PD'}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-[hsl(var(--text-primary))]">{drive.title}</h4>
+                      <p className="text-xs text-[hsl(var(--text-secondary))] mt-0.5">{drive.company?.name}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-base text-[hsl(var(--text-primary))] group-hover:text-[hsl(var(--primary))] transition-colors">
-                      {drive.title}
-                    </h3>
-                    <p className="text-xs font-bold text-[hsl(var(--text-secondary))] flex items-center gap-1.5 mt-0.5">
-                      <Building2 className="h-3.5 w-3.5 text-[hsl(var(--text-muted))]" />
-                      {drive.companyName}
-                    </p>
-                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    drive.status === 'ONGOING'
+                      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                      : drive.status === 'UPCOMING'
+                      ? 'bg-sky-500/10 text-sky-600 border-sky-500/20'
+                      : 'bg-slate-500/10 text-slate-600 border-slate-500/20'
+                  }`}>
+                    {drive.status}
+                  </span>
                 </div>
 
-                <div>{getStatusBadge(drive.status)}</div>
-              </div>
-
-              {/* Description */}
-              {drive.description && (
-                <p className="text-xs text-[hsl(var(--text-secondary))] line-clamp-2 leading-relaxed">
-                  {drive.description}
-                </p>
-              )}
-
-              {/* Grid Metadata Specs */}
-              <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-[hsl(var(--muted)/0.4)] border border-[hsl(var(--border)/0.6)] text-xs">
-                <div className="space-y-1">
-                  <span className="text-[10px] uppercase font-bold text-[hsl(var(--text-muted))] flex items-center gap-1">
-                    <Briefcase className="h-3 w-3 text-[hsl(var(--primary))]" /> Role & Package
-                  </span>
-                  <p className="font-bold text-[hsl(var(--text-primary))]">{drive.jobRole}</p>
-                  <p className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400">{drive.ctc}</p>
-                </div>
-
-                <div className="space-y-1">
-                  <span className="text-[10px] uppercase font-bold text-[hsl(var(--text-muted))] flex items-center gap-1">
-                    <Calendar className="h-3 w-3 text-[hsl(var(--primary))]" /> Key Dates
-                  </span>
-                  <p className="font-semibold text-[hsl(var(--text-primary))]">Drive: {drive.driveDate}</p>
-                  <p className="text-[11px] text-[hsl(var(--danger))] font-medium">Deadline: {drive.deadline}</p>
+                <div className="space-y-2 pt-3 border-t border-[hsl(var(--border))/0.6] text-xs text-[hsl(var(--text-secondary))] font-medium">
+                  <p className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-[hsl(var(--text-muted))]" />
+                    {drive.jobRole || 'SDE Internship'}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-[hsl(var(--text-muted))]" />
+                    CTC: {drive.package} LPA
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-[hsl(var(--text-muted))]" />
+                    Location: {drive.location || 'Bangalore'}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-[hsl(var(--text-muted))]" />
+                    Eligibility: CGPA ≥ {drive.minCgpa}
+                  </p>
                 </div>
               </div>
 
-              {/* Eligibility & Venue */}
-              <div className="space-y-2 text-xs">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[11px] font-bold text-[hsl(var(--text-muted))] flex items-center gap-1 mr-1">
-                    <GraduationCap className="h-3.5 w-3.5 text-[hsl(var(--text-muted))]" /> Eligibility:
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md bg-[hsl(var(--surface))] border border-[hsl(var(--border))] text-[10px] font-bold text-[hsl(var(--text-primary))]">
-                    CGPA ≥ {drive.minCgpa}
-                  </span>
-                  {drive.eligibleBranches.map((b) => (
-                    <span
-                      key={b}
-                      className="px-2 py-0.5 rounded-md bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] text-[10px] font-bold border border-[hsl(var(--primary)/0.15)]"
-                    >
-                      {b}
-                    </span>
-                  ))}
-                </div>
+              {/* Action Buttons */}
+              <div className="pt-3 border-t border-[hsl(var(--border))/0.6] flex justify-between items-center text-xs">
+                <button
+                  onClick={() => setViewingEligibilityDrive(drive)}
+                  className="inline-flex items-center gap-1 text-[hsl(var(--primary))] font-bold hover:underline cursor-pointer"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                  Evaluate Eligibility
+                </button>
 
-                <div className="flex items-center gap-1.5 text-[11px] text-[hsl(var(--text-secondary))] font-medium">
-                  <MapPin className="h-3.5 w-3.5 text-[hsl(var(--text-muted))] shrink-0" />
-                  <span className="truncate">{drive.venue}</span>
-                </div>
-              </div>
-
-              {/* Card Footer Actions */}
-              <div className="pt-3 border-t border-[hsl(var(--border))] flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 text-xs text-[hsl(var(--text-secondary))] font-medium">
-                  <Users className="h-3.5 w-3.5 text-[hsl(var(--text-muted))]" />
-                  <span>{drive.applicantsCount} Registered</span>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setViewingApplicantsDrive(drive)}
-                    className="p-2 rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-primary))] transition-colors cursor-pointer text-xs font-bold inline-flex items-center gap-1"
-                    title="View Applicants"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    Applicants
-                  </button>
-
+                <div className="flex gap-1">
                   <button
                     onClick={() => handleOpenEditModal(drive)}
-                    className="p-2 rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-primary))] transition-colors cursor-pointer"
-                    title="Edit Drive"
+                    className="p-1 text-[hsl(var(--text-muted))] hover:text-[hsl(var(--primary))] rounded cursor-pointer"
+                    title="Edit"
                   >
                     <Edit2 className="h-3.5 w-3.5" />
                   </button>
-
                   <button
-                    onClick={() => handleCloseDrive(drive.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      drive.status === 'COMPLETED'
-                        ? 'bg-slate-500/10 text-slate-600 dark:text-slate-400 hover:bg-slate-500/20'
-                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
-                    }`}
+                    onClick={() => duplicateMutation.mutate(drive.id)}
+                    className="p-1 text-[hsl(var(--text-muted))] hover:text-[hsl(var(--primary))] rounded cursor-pointer"
+                    title="Duplicate"
                   >
-                    {drive.status === 'COMPLETED' ? 'Reopen' : 'Close Drive'}
+                    <Copy className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => deleteMutation.mutate(drive.id)}
+                    className="p-1 text-[hsl(var(--danger))] hover:bg-rose-50 rounded cursor-pointer"
+                    title="Delete"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
@@ -552,10 +400,93 @@ export function PlacementDrivesPage() {
         </div>
       )}
 
-      {/* Create / Edit Drive Modal */}
+      {/* Eligibility Evaluation Slide-Drawer / Modal */}
+      {viewingEligibilityDrive && (
+        <div className="fixed inset-0 bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-[hsl(var(--surface))] rounded-2xl border border-[hsl(var(--border))] max-w-4xl w-full p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setViewingEligibilityDrive(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-primary))] transition-colors cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h3 className="text-xl font-bold text-[hsl(var(--text-primary))] flex items-center gap-2 mb-2">
+              <Users className="h-5 w-5 text-[hsl(var(--primary))]" />
+              Eligibility Analysis Engine
+            </h3>
+            <p className="text-xs text-[hsl(var(--text-secondary))] mb-6">
+              Checking platform students against drive rules (Min CGPA: {viewingEligibilityDrive.minCgpa}, Backlogs: {viewingEligibilityDrive.maxBacklogs}, Departments: {viewingEligibilityDrive.departmentsEligible?.join(', ')}).
+            </p>
+
+            {isLoadingEligibility ? (
+              <div className="py-12"><LoadingSkeleton count={3} height="h-16" /></div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Eligible Column */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
+                    <Check className="h-4.5 w-4.5" />
+                    Eligible Students ({eligibilityData?.eligible.length || 0})
+                  </h4>
+                  <div className="border border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted))/0.1] divide-y divide-[hsl(var(--border))]/40 max-h-96 overflow-y-auto">
+                    {eligibilityData?.eligible.map((s: any) => (
+                      <div key={s.id} className="p-3 text-xs flex justify-between items-center">
+                        <div>
+                          <p className="font-bold text-[hsl(var(--text-primary))]">{s.name}</p>
+                          <p className="text-[10px] text-[hsl(var(--text-secondary))]">{s.rollNumber} &bull; {s.department}</p>
+                        </div>
+                        <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">
+                          CGPA: {s.cgpa}
+                        </span>
+                      </div>
+                    ))}
+                    {eligibilityData?.eligible.length === 0 && (
+                      <p className="p-4 text-center text-xs text-[hsl(var(--text-muted))] italic">No students match current drive rules.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Ineligible Column */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-rose-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <AlertCircle className="h-4.5 w-4.5" />
+                    Ineligible Students ({eligibilityData?.notEligible.length || 0})
+                  </h4>
+                  <div className="border border-[hsl(var(--border))] rounded-xl bg-[hsl(var(--muted))/0.1] divide-y divide-[hsl(var(--border))]/40 max-h-96 overflow-y-auto">
+                    {eligibilityData?.notEligible.map((s: any) => (
+                      <div key={s.id} className="p-3 text-xs space-y-1.5">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-bold text-[hsl(var(--text-primary))]">{s.name}</p>
+                            <p className="text-[10px] text-[hsl(var(--text-secondary))]">{s.rollNumber} &bull; {s.department}</p>
+                          </div>
+                          <span className="font-semibold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full text-[10px]">
+                            CGPA: {s.cgpa || 0}
+                          </span>
+                        </div>
+                        <div className="pl-2 border-l-2 border-rose-300 space-y-0.5">
+                          {s.reasons.map((reason: string, idx: number) => (
+                            <p key={idx} className="text-[9px] text-[hsl(var(--text-secondary))] leading-normal">{reason}</p>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    {eligibilityData?.notEligible.length === 0 && (
+                      <p className="p-4 text-center text-xs text-[hsl(var(--text-muted))] italic">No ineligible students found.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Create / Edit Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-[hsl(var(--surface))] rounded-2xl border border-[hsl(var(--border))] max-w-xl w-full p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-[hsl(var(--surface))] rounded-2xl border border-[hsl(var(--border))] max-w-2xl w-full p-6 shadow-xl relative max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
             <button
               onClick={() => setIsCreateModalOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-primary))] transition-colors cursor-pointer"
@@ -566,218 +497,197 @@ export function PlacementDrivesPage() {
             <div className="flex items-center gap-2 pb-4 border-b border-[hsl(var(--border))]">
               <Calendar className="h-5 w-5 text-[hsl(var(--primary))]" />
               <h3 className="font-bold text-base text-[hsl(var(--text-primary))]">
-                {editingDrive ? 'Edit Placement Drive' : 'Schedule New Placement Drive'}
+                {editingDrive ? 'Edit Placement Drive' : 'Schedule Placement Drive'}
               </h3>
             </div>
 
-            <form onSubmit={handleSaveDrive} className="space-y-4 mt-4 text-xs">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSaveDrive} className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Company Name *
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Drive Title
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Google India"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    value={formData.title}
+                    onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+                    placeholder="e.g. Google India Drive 2026"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Job Role / Title *
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Partner Company
+                  </label>
+                  <select
+                    value={formData.companyId}
+                    onChange={(e) => setFormData((p) => ({ ...p, companyId: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                  >
+                    {companies.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Job Role
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Software Engineer"
                     value={formData.jobRole}
-                    onChange={(e) => setFormData({ ...formData, jobRole: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    CTC / Package
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. ₹18 - ₹22 LPA"
-                    value={formData.ctc}
-                    onChange={(e) => setFormData({ ...formData, ctc: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    onChange={(e) => setFormData((p) => ({ ...p, jobRole: e.target.value }))}
+                    placeholder="e.g. Software Development Engineer"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Venue / Meeting Details
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Package (LPA)
                   </label>
                   <input
-                    type="text"
-                    placeholder="e.g. Auditorium / Google Meet"
-                    value={formData.venue}
-                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Drive Date *
-                  </label>
-                  <input
-                    type="date"
+                    type="number"
                     required
-                    value={formData.driveDate}
-                    onChange={(e) => setFormData({ ...formData, driveDate: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    value={formData.package}
+                    onChange={(e) => setFormData((p) => ({ ...p, package: e.target.value }))}
+                    placeholder="e.g. 24.5"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
+                    placeholder="e.g. Bangalore, Hyderabad"
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
                     Registration Deadline
                   </label>
                   <input
                     type="date"
-                    value={formData.deadline}
-                    onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    required
+                    value={formData.registrationDeadline}
+                    onChange={(e) => setFormData((p) => ({ ...p, registrationDeadline: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
                     Minimum CGPA
                   </label>
                   <input
                     type="number"
                     step="0.1"
-                    min="0"
-                    max="10"
-                    placeholder="7.5"
                     value={formData.minCgpa}
-                    onChange={(e) => setFormData({ ...formData, minCgpa: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    onChange={(e) => setFormData((p) => ({ ...p, minCgpa: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                    Eligible Branches (comma separated)
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Max Backlogs
                   </label>
                   <input
-                    type="text"
-                    placeholder="CSE, IT, ECE"
-                    value={formData.eligibleBranches}
-                    onChange={(e) => setFormData({ ...formData, eligibleBranches: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none"
+                    type="number"
+                    value={formData.maxBacklogs}
+                    onChange={(e) => setFormData((p) => ({ ...p, maxBacklogs: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Openings Count
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.openings}
+                    onChange={(e) => setFormData((p) => ({ ...p, openings: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-[hsl(var(--text-secondary))] uppercase mb-1">
-                  Drive Instructions / Description
+                <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                  Eligible Departments (Comma Separated)
                 </label>
-                <textarea
-                  rows={3}
-                  placeholder="Provide instructions regarding round details, dress code, required documents..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] outline-none resize-none"
+                <input
+                  type="text"
+                  value={formData.departmentsEligible}
+                  onChange={(e) => setFormData((p) => ({ ...p, departmentsEligible: e.target.value }))}
+                  placeholder="e.g. CSE, IT, ECE"
+                  className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-[hsl(var(--border))]">
+              <div>
+                <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                  Required Skills (Comma Separated)
+                </label>
+                <input
+                  type="text"
+                  value={formData.requiredSkills}
+                  onChange={(e) => setFormData((p) => ({ ...p, requiredSkills: e.target.value }))}
+                  placeholder="e.g. React, Node.js, SQL"
+                  className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                  Job Description
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="Summarize roles and responsibilities..."
+                  className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end pt-3 border-t border-[hsl(var(--border))]">
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-primary))] font-bold cursor-pointer"
+                  className="py-2 px-4 text-xs font-bold rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-primary))] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-hover))] text-white font-bold cursor-pointer shadow-xs"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                  className="py-2 px-4 text-xs font-bold rounded-lg bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-hover))] text-white disabled:opacity-50 transition-all cursor-pointer shadow-xs"
                 >
-                  {editingDrive ? 'Save Changes' : 'Create Drive'}
+                  Save Drive
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* View Applicants Drawer */}
-      {viewingApplicantsDrive && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex justify-end z-50 animate-in fade-in duration-200">
-          <div className="bg-[hsl(var(--surface))] w-full max-w-md h-full border-l border-[hsl(var(--border))] p-6 shadow-2xl overflow-y-auto animate-slide-in-right space-y-5">
-            <div className="flex items-center justify-between pb-4 border-b border-[hsl(var(--border))]">
-              <div>
-                <h3 className="font-extrabold text-base text-[hsl(var(--text-primary))]">Registered Applicants</h3>
-                <p className="text-xs text-[hsl(var(--text-secondary))]">{viewingApplicantsDrive.title}</p>
-              </div>
-              <button
-                onClick={() => setViewingApplicantsDrive(null)}
-                className="p-1.5 rounded-lg hover:bg-[hsl(var(--muted))] text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-primary))] transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="p-3 rounded-xl bg-[hsl(var(--primary)/0.06)] border border-[hsl(var(--primary)/0.15)] flex items-center justify-between text-xs font-bold text-[hsl(var(--primary))]">
-              <span>Total Applicants:</span>
-              <span className="text-sm font-black">{viewingApplicantsDrive.applicantsCount}</span>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { name: 'Rakshana S.', roll: '2022CSE045', cgpa: 8.9, status: 'SHORTLISTED', dept: 'CSE' },
-                { name: 'Akshai V.', roll: '2022CSE012', cgpa: 9.1, status: 'INTERVIEWING', dept: 'CSE' },
-                { name: 'Divya M.', roll: '2022IT089', cgpa: 8.4, status: 'APPLIED', dept: 'IT' },
-                { name: 'Karthik R.', roll: '2022ECE034', cgpa: 8.2, status: 'APPLIED', dept: 'ECE' },
-              ].map((applicant, idx) => (
-                <div
-                  key={idx}
-                  className="p-3.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] flex items-center justify-between hover:border-[hsl(var(--primary)/0.3)] transition-all text-xs"
-                >
-                  <div className="space-y-0.5">
-                    <p className="font-bold text-[hsl(var(--text-primary))]">{applicant.name}</p>
-                    <p className="text-[11px] text-[hsl(var(--text-secondary))]">
-                      {applicant.roll} • {applicant.dept}
-                    </p>
-                  </div>
-
-                  <div className="text-right space-y-1">
-                    <span className="px-2 py-0.5 rounded-md bg-[hsl(var(--muted))] font-bold text-[10px] text-[hsl(var(--text-primary))]">
-                      CGPA {applicant.cgpa}
-                    </span>
-                    <p className="text-[10px] font-extrabold text-[hsl(var(--primary))]">{applicant.status}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-4 border-t border-[hsl(var(--border))]">
-              <button
-                onClick={() => setViewingApplicantsDrive(null)}
-                className="w-full py-2 rounded-xl bg-[hsl(var(--muted))] hover:bg-[hsl(var(--border))] text-[hsl(var(--text-primary))] font-bold text-xs cursor-pointer"
-              >
-                Close Panel
-              </button>
-            </div>
           </div>
         </div>
       )}

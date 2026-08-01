@@ -70,6 +70,7 @@ model User {
   studentProfile          StudentProfile?
   recruiterProfile        RecruiterProfile?
   placementOfficerProfile PlacementOfficerProfile?
+  adminProfile            Admin?
   notifications           Notification[]
 }
 
@@ -94,6 +95,7 @@ model StudentProfile {
   resumes        Resume[]
   portfolios     Portfolio[]
   applications   Application[]
+  documents      Document[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
@@ -133,6 +135,18 @@ model Company {
   size              String?
   foundedYear       Int?
   address           String?
+  
+  // Extended fields
+  recruiterName     String?
+  recruiterEmail    String?
+  recruiterPhone    String?
+  hrContact         String?
+  averagePackage    Float?             @default(0)
+  highestPackage    Float?             @default(0)
+  previousVisitDate DateTime?
+  studentsHired     Int?               @default(0)
+  notes             String?
+
   recruiterProfiles RecruiterProfile[]
   jobs              Job[]
   placementDrives   PlacementDrive[]
@@ -179,6 +193,22 @@ model PlacementDrive {
   eligibilityCriteria String?
   startDate           DateTime
   endDate             DateTime?
+  
+  // Extended fields
+  jobRole             String?
+  package             Float?          @default(0)
+  location            String?
+  employmentType      String?         @default("Full-time") // "Full-time", "Internship", "Internship+FTE"
+  registrationDeadline DateTime?
+  departmentsEligible String[]        @default([])
+  minCgpa             Float?          @default(0)
+  maxBacklogs         Int?            @default(0)
+  requiredSkills      String[]        @default([])
+  batchYear           Int?
+  openings            Int?            @default(1)
+  bondDetails         String?
+  requiredDocuments   String[]        @default([])
+
   interviews          Interview[]
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
@@ -195,11 +225,20 @@ model Application {
   atsBreakdown  Json?
   hiredAt       DateTime?
   joiningDate   DateTime?
-  offerStatus   String?
+  offerStatus   String?                    @default("PENDING") // PENDING, ACCEPTED, REJECTED
   appliedAt     DateTime                   @default(now())
   updatedAt     DateTime                   @updatedAt
   interviews    Interview[]
   statusHistory ApplicationStatusHistory[]
+
+  // Extended offer details
+  ctc           Float?                     @default(0)
+  baseSalary    Float?                     @default(0)
+  bonus         Float?                     @default(0)
+  stocks        Float?                     @default(0)
+  benefits      String?
+  offerLetter   String?
+  joiningStatus String?                    @default("PENDING") // PENDING, JOINED, DECLINED, DEFERRED
 
   @@unique([studentId, jobId])
 }
@@ -226,12 +265,12 @@ model Interview {
   duration      Int?            @default(45)
   interviewer   String?
   meetingLink   String?
-  roundType     String?         @default("Technical")
+  roundType     String?         @default("Technical") // e.g. "Technical", "Coding", "Managerial", "HR", "Final"
   location      String?
   status        InterviewStatus @default(SCHEDULED)
-  result        String?         @default("PENDING")
-  feedback      String?
-  notes         String?
+  result        String?         @default("PENDING") // PENDING, QUALIFIED, REJECTED, HOLD
+  attendance    String?         @default("PENDING") // PENDING, PRESENT, ABSENT, LATE
+  instructions  String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 }
@@ -325,3 +364,106 @@ model Notification {
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 }
+
+model Admin {
+  id              String             @id @default(uuid())
+  userId          String             @unique
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employeeId      String             @unique
+  firstName       String
+  lastName        String
+  department      String
+  designation     String
+  phone           String?
+  role            String             @default("ADMIN") // e.g. "SUPER_ADMIN", "ADMIN"
+  status          String             @default("ACTIVE") // "ACTIVE", "DISABLED", "SUSPENDED"
+  permissionLevel Int                @default(1)
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  permissions     AdminPermission[]
+  activityLogs    AdminActivityLog[]
+  sessions        AdminSession[]
+
+  @@map("admins")
+}
+
+model AdminPermission {
+  id         String   @id @default(uuid())
+  adminId    String
+  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  permission String // e.g. "MANAGE_STUDENTS", "MANAGE_COMPANIES", etc.
+  createdAt  DateTime @default(now())
+
+  @@unique([adminId, permission])
+  @@map("admin_permissions")
+}
+
+model AdminActivityLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  action    String // LOGIN, LOGOUT, PROFILE_UPDATE, PASSWORD_CHANGE, ROLE_CHANGE, PERMISSION_CHANGE, DELETION, STATUS_CHANGE
+  details   String? // Description / metadata about the change
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@map("admin_activity_logs")
+}
+
+model AdminSession {
+  id         String   @id @default(uuid())
+  adminId    String
+  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  token      String   @unique
+  ipAddress  String?
+  userAgent  String?
+  expiresAt  DateTime
+  lastActive DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@map("admin_sessions")
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  type      String   @default("string") // string, boolean, number, json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model Document {
+  id               String            @id @default(uuid())
+  studentId        String
+  student          StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  type             String            // RESUME, MARK_SHEET, GOVT_ID, OFFER_LETTER, NOC, BONAFIDE
+  title            String
+  url              String
+  status           String            @default("PENDING") // PENDING, APPROVED, REJECTED
+  version          Int               @default(1)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  approvalHistories ApprovalHistory[]
+
+  @@map("documents")
+}
+
+model ApprovalHistory {
+  id          String    @id @default(uuid())
+  documentId  String?
+  document    Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  approvedBy  String    // User Name / ID
+  approvedOn  DateTime  @default(now())
+  status      String    // APPROVED, REJECTED
+  comments    String?
+  version     Int       @default(1)
+
+  @@map("approval_histories")
+}
+
+

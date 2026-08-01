@@ -14,6 +14,7 @@ import {
   BarChart3,
   Search,
   TrendingUp,
+  Shield,
 } from 'lucide-react';
 import type { RoleType } from '@/lib/constants';
 
@@ -27,13 +28,19 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
   ADMIN: [
     { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { title: 'Manage Users', href: '/admin/users', icon: Users },
+    { title: 'Manage Admins', href: '/admin/admins', icon: Shield },
+    { title: 'Manage Companies', href: '/admin/companies', icon: Building2 },
+    { title: 'System Audit Logs', href: '/admin/logs', icon: ClipboardList },
     { title: 'System Settings', href: '/admin/settings', icon: Settings },
   ],
   PLACEMENT_OFFICER: [
     { title: 'Dashboard', href: '/placement/dashboard', icon: LayoutDashboard },
     { title: 'Students', href: '/placement/students', icon: GraduationCap },
-    { title: 'Approvals', href: '/placement/approvals', icon: Building2 },
-    { title: 'Interview Scheduler', href: '/placement/scheduler', icon: UserCheck },
+    { title: 'Placement Drives', href: '/placement/drives', icon: Calendar },
+    { title: 'Companies', href: '/placement/companies', icon: Building2 },
+    { title: 'Applications', href: '/placement/applications', icon: ClipboardList },
+    { title: 'Approvals Desk', href: '/placement/approvals', icon: UserCheck },
+    { title: 'Scheduler', href: '/placement/scheduler', icon: UserCheck },
     { title: 'Publish Results', href: '/placement/results', icon: Layers },
     { title: 'Placement Analytics', href: '/placement/analytics', icon: BarChart3 },
   ],

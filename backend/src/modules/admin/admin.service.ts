@@ -128,5 +128,27 @@ export class AdminService {
       data,
     });
   }
+
+  static async getSettings() {
+    const dbSettings = await prisma.systemSetting.findMany();
+    const settingsObj: Record<string, string> = {};
+    dbSettings.forEach((setting) => {
+      settingsObj[setting.key] = setting.value;
+    });
+    return settingsObj;
+  }
+
+  static async updateSettings(settings: Record<string, string>) {
+    const operations = Object.entries(settings).map(([key, value]) =>
+      prisma.systemSetting.upsert({
+        where: { key },
+        update: { value: String(value) },
+        create: { key, value: String(value) },
+      })
+    );
+    await prisma.$transaction(operations);
+    return settings;
+  }
 }
 export default AdminService;
+

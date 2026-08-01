@@ -28,5 +28,16 @@ export class AdminController {
     const company = await AdminService.updateCompany(req.params.id as string, req.body);
     return ApiResponse.success(res, company, 'Company details updated successfully');
   });
+
+  static getSettings = asyncHandler(async (req: Request, res: Response) => {
+    const settings = await AdminService.getSettings();
+    return ApiResponse.success(res, settings, 'System settings retrieved successfully');
+  });
+
+  static updateSettings = asyncHandler(async (req: Request, res: Response) => {
+    const settings = await AdminService.updateSettings(req.body);
+    return ApiResponse.success(res, settings, 'System settings updated successfully');
+  });
 }
 export default AdminController;
+

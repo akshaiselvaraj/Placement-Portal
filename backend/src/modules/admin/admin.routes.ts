@@ -12,7 +12,13 @@ const router = Router();
 
 // Apply global authentication and authorization guards to endpoints
 router.use(authenticate);
+
+// Settings (Restricted to ADMIN only)
+router.get('/settings', authorize('ADMIN'), AdminController.getSettings);
+router.put('/settings', authorize('ADMIN'), AdminController.updateSettings);
+
 router.use(authorize('ADMIN', 'PLACEMENT_OFFICER'));
+
 
 router.get('/users', validate(userQuerySchema, 'query'), AdminController.getUsers);
 router.put('/users/:id/status', validate(toggleUserStatusSchema), AdminController.toggleUserStatus);

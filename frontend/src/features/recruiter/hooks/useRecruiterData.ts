@@ -40,7 +40,7 @@ export function useRecruiterData(filters?: ApplicantFilters) {
   });
 
   const updateApplicantStatusMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { status: string; notes?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { status: string; notes?: string; joiningDate?: string; offerStatus?: string } }) =>
       recruiterService.updateApplicantStatus(id, data),
     onSuccess: (data: any) => {
       toast.success(`Status updated to ${data.status?.replace('_', ' ')}`);

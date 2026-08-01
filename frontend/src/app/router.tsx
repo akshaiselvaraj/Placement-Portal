@@ -19,7 +19,7 @@ import {
   InterviewDesk,
   PlacementDrivesPage,
   ApplicationsPage,
-  InterviewsPage,
+  InterviewsPage as PlacementInterviewsPage,
   ResultsManagementPage,
 } from '@/features/placement-officer';
 import { AdminDashboard, UsersManagement, CompaniesManagement } from '@/features/admin';
@@ -144,7 +144,7 @@ export const router = createBrowserRouter([
         path: '/placement/interviews',
         element: (
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
-            <InterviewsPage />
+            <PlacementInterviewsPage />
           </ProtectedRoute>
         ),
       },

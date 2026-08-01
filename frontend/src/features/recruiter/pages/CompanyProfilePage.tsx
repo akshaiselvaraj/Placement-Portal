@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useRecruiterData } from '../hooks/useRecruiterData';
 import { LoadingSkeleton } from '@/components/common';
-import { Building2, Globe, MapPin, Mail, Phone, Users, Calendar, Save, CheckCircle, AlertCircle, Edit3 } from 'lucide-react';
+import { Building2, Globe, MapPin, Mail, Users, Calendar, Save, CheckCircle, AlertCircle, Edit3 } from 'lucide-react';
 
-function Field({ label, value, children }: { label: string; value?: string | null; children?: React.ReactNode }) {
+function Field({ label, children }: { label: string; children?: React.ReactNode }) {
   return (
     <div>
       <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] mb-1.5 uppercase tracking-wide">

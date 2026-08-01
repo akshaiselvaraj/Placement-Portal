@@ -1,7 +1,7 @@
 import { useAdminData } from '../hooks/useAdminData';
 import { StatCard, DataTable, LoadingSkeleton } from '@/components/common';
 import type { Column } from '@/components/common';
-import { Users, Building, ShieldAlert, ArrowUpRight, ShieldCheck, Shield } from 'lucide-react';
+import { Users, Building, ArrowUpRight, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { User } from '@/types';
 

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { jobService } from '../services/job.service';
 import type { CreateJobPayload } from '../services/job.service';
+import { toast } from '@/store';
 
 // ── Public / Student Hooks ──────────────────────────────────────
 export function usePublicJobs(params?: { search?: string; type?: string }) {
@@ -68,6 +69,19 @@ export function useCreateJob() {
     mutationFn: (data: CreateJobPayload) => jobService.createJob(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recruiterJobs'] });
+      toast.success('Job posted successfully');
+    },
+    onError: (err: any) => {
+      console.error('Failed to create job:', err.response?.data || err.message);
+      let errorMessage = err.response?.data?.message || 'Failed to create job';
+      if (err.response?.data?.errors) {
+        const errors = err.response.data.errors;
+        const firstField = Object.keys(errors)[0];
+        if (firstField && errors[firstField]?.[0]) {
+          errorMessage = `${firstField}: ${errors[firstField][0]}`;
+        }
+      }
+      toast.error(errorMessage);
     },
   });
 }
@@ -79,6 +93,19 @@ export function useUpdateJob() {
       jobService.updateJob(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recruiterJobs'] });
+      toast.success('Job updated successfully');
+    },
+    onError: (err: any) => {
+      console.error('Failed to update job:', err.response?.data || err.message);
+      let errorMessage = err.response?.data?.message || 'Failed to update job';
+      if (err.response?.data?.errors) {
+        const errors = err.response.data.errors;
+        const firstField = Object.keys(errors)[0];
+        if (firstField && errors[firstField]?.[0]) {
+          errorMessage = `${firstField}: ${errors[firstField][0]}`;
+        }
+      }
+      toast.error(errorMessage);
     },
   });
 }

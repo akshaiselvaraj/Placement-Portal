@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { usePlacementData } from '../hooks/usePlacementData';
 import { StatusBadge, LoadingSkeleton, EmptyState } from '@/components/common';
-import { ShieldAlert, ShieldCheck, CheckCircle2, XCircle, GraduationCap, Link2, BookOpen } from 'lucide-react';
+import { ShieldAlert, CheckCircle2, XCircle, GraduationCap, Link2, BookOpen } from 'lucide-react';
 import type { StudentProfile } from '@/types';
 
 export function StudentsManagement() {

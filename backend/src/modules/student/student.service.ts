@@ -86,6 +86,81 @@ export class StudentService {
     });
   }
 
+  // Reapply profile verification
+  static async reapplyProfile(userId: string) {
+    const student = await prisma.studentProfile.findUnique({
+      where: { userId },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!student) {
+      throw ApiError.notFound('Student profile not found');
+    }
+
+    if (student.profileStatus !== 'REJECTED') {
+      throw ApiError.badRequest('Only rejected profiles can be reapplied');
+    }
+
+    const updated = await prisma.studentProfile.update({
+      where: { userId },
+      data: {
+        profileStatus: 'PENDING',
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    // Notify Student
+    await prisma.notification.create({
+      data: {
+        userId: student.userId,
+        title: 'Profile Resubmitted',
+        message: 'Your profile has been successfully resubmitted for verification.',
+        type: 'INFO',
+        link: '/student/profile',
+      },
+    });
+
+    // Notify all PLACEMENT_OFFICERs
+    const placementOfficers = await prisma.user.findMany({
+      where: {
+        role: 'PLACEMENT_OFFICER',
+        isActive: true,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    for (const po of placementOfficers) {
+      await prisma.notification.create({
+        data: {
+          userId: po.id,
+          title: 'Profile Resubmitted',
+          message: `${student.user.name} has resubmitted their profile for verification.`,
+          type: 'INFO',
+          link: '/placement/students',
+        },
+      });
+    }
+
+    return updated;
+  }
+
   // --- Education CRUD ---
   static async addEducation(userId: string, data: z.infer<typeof educationSchema>) {
     const student = await prisma.studentProfile.findUnique({ where: { userId } });

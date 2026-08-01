@@ -8,7 +8,6 @@ import {
   Plus,
   Briefcase,
   MapPin,
-  Calendar,
   Users,
   DollarSign,
   Edit2,
@@ -16,7 +15,6 @@ import {
   X,
   Search,
   Filter,
-  Eye,
   Clock,
 } from 'lucide-react';
 
@@ -94,12 +92,17 @@ export function RecruiterJobsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = {
+    const payload: any = {
       ...form,
-      companyId: company?.id || form.companyId,
       salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
       salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
     };
+    const cId = company?.id || form.companyId;
+    if (cId) {
+      payload.companyId = cId;
+    } else {
+      delete payload.companyId;
+    }
 
     if (formMode === 'create') {
       await createJob.mutateAsync(payload);

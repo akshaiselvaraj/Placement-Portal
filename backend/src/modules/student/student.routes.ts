@@ -16,6 +16,7 @@ router.get('/profile', authenticate, StudentController.getProfile);
 
 // Write actions restricted to STUDENT role only
 router.put('/profile', authenticate, authorize('STUDENT'), validate(updateProfileSchema), StudentController.updateProfile);
+router.post('/profile/reapply', authenticate, authorize('STUDENT'), StudentController.reapplyProfile);
 
 // Education CRUD
 router.post('/education', authenticate, authorize('STUDENT'), validate(educationSchema), StudentController.addEducation);

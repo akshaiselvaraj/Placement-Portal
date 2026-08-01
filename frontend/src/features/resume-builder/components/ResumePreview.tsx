@@ -1,4 +1,3 @@
-import React from 'react';
 import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 
 interface ResumePreviewProps {

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { recruiterService, type CandidateDetails, type ScheduleInterviewPayload, type AtsBreakdown } from '../services/recruiter.service';
+import { recruiterService, type ScheduleInterviewPayload, type AtsBreakdown } from '../services/recruiter.service';
 import { useRecruiterData } from '../hooks/useRecruiterData';
-import { StatusBadge, LoadingSkeleton } from '@/components/common';
+import { StatusBadge, LoadingSkeleton, Github, Linkedin } from '@/components/common';
 import {
-  ArrowLeft, Star, User, Briefcase, GraduationCap, Code2, Award, Phone, Mail,
-  Globe, Github, Linkedin, ChevronDown, ChevronUp, Calendar, Clock,
+  ArrowLeft, User, Briefcase, GraduationCap, Code2, Award, Phone, Mail,
+  Globe, ChevronDown, ChevronUp, Calendar, Clock,
   Video, MapPin, CheckCircle, XCircle, AlertCircle, MessageSquare, Download, Plus, X
 } from 'lucide-react';
 
@@ -219,7 +219,7 @@ export function CandidateDetailPage() {
 
   const [activeTab, setActiveTab] = useState<'overview' | 'ats' | 'interviews' | 'history'>('overview');
   const [showInterviewForm, setShowInterviewForm] = useState(false);
-  const [statusAction, setStatusAction] = useState<{ status: string; label: string } | null>(null);
+  const [statusAction, setStatusAction] = useState<{ status: string; label: string; color?: string } | null>(null);
   const [statusNotes, setStatusNotes] = useState('');
   const [joiningDate, setJoiningDate] = useState('');
 
@@ -496,7 +496,7 @@ export function CandidateDetailPage() {
                   </div>
                   <InterviewForm
                     applicationId={candidate.id}
-                    onSchedule={scheduleInterview}
+                    onSchedule={async (data) => { await scheduleInterview(data); }}
                     isPending={isSchedulingInterview}
                     onClose={() => { setShowInterviewForm(false); refetch(); }}
                   />

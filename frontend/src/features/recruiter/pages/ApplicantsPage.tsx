@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useRecruiterData } from '../hooks/useRecruiterData';
 import { useRecruiterJobs } from '@/features/jobs/hooks/useJobs';
 import { recruiterService } from '../services/recruiter.service';
-import type { CandidateDetails, ApplicantFilters } from '../services/recruiter.service';
+import type { ApplicantFilters } from '../services/recruiter.service';
 import { StatusBadge, LoadingSkeleton } from '@/components/common';
 import {
-  Users, Search, Filter, Star, ChevronRight, SlidersHorizontal,
-  Briefcase, BookOpen, Award, GraduationCap, CheckCircle, XCircle, MessageSquare
+  Users, Search, Filter, ChevronRight, SlidersHorizontal,
+  Briefcase, GraduationCap, CheckCircle, XCircle, MessageSquare
 } from 'lucide-react';
 
 const STATUS_OPTIONS = [

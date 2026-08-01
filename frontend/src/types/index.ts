@@ -66,6 +66,7 @@ export interface Company {
   foundedYear: number | null;
   address: string | null;
   createdAt: string;
+  jobs?: Job[];
 }
 
 export interface Job {
@@ -119,6 +120,7 @@ export interface Application {
   student?: StudentProfile;
   job?: Job;
   statusHistory?: StatusHistory[];
+  interviews?: Interview[];
 }
 
 export interface StatusHistory {
@@ -209,6 +211,7 @@ export interface Resume {
   isApproved: boolean;
   createdAt: string;
   updatedAt: string;
+  student?: StudentProfile;
 }
 
 export interface Portfolio {
@@ -222,6 +225,7 @@ export interface Portfolio {
   isApproved: boolean;
   createdAt: string;
   updatedAt: string;
+  student?: StudentProfile;
 }
 
 export interface Notification {

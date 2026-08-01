@@ -1,4 +1,4 @@
-import { FileText, Globe, GraduationCap, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { FileText, Globe, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { StatusBadge } from '@/components/common';
 import type { Application } from '@/types';
 
@@ -31,9 +31,9 @@ export function ApplicantCard({ application, onUpdateStatus, isUpdating }: Appli
               <h4 className="font-bold text-sm text-[hsl(var(--text-primary))] flex items-center gap-1.5">
                 {student.user?.name}
                 {isVerified ? (
-                  <CheckCircle2 className="h-4.5 w-4.5 text-[hsl(var(--success))]" title="Profile Verified" />
+                  <span title="Profile Verified"><CheckCircle2 className="h-4.5 w-4.5 text-[hsl(var(--success))]" /></span>
                 ) : (
-                  <AlertTriangle className="h-4.5 w-4.5 text-[hsl(var(--warning))]" title="Pending Verification" />
+                  <span title="Pending Verification"><AlertTriangle className="h-4.5 w-4.5 text-[hsl(var(--warning))]" /></span>
                 )}
               </h4>
               <p className="text-xs text-[hsl(var(--text-secondary))]">{student.user?.email}</p>

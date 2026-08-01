@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, Globe, ExternalLink, GraduationCap, Award, FolderGit2, ChevronRight, BookOpen, ShieldCheck } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, ExternalLink, GraduationCap, Award, BookOpen, ChevronRight } from 'lucide-react';
 import { Github, Linkedin } from '@/components/common';
 
 interface PortfolioPreviewProps {
@@ -150,7 +150,7 @@ export function PortfolioPreview({ themeId, data }: PortfolioPreviewProps) {
   // Get name initials
   const initials = name
     .split(' ')
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join('')
     .toUpperCase()
     .substring(0, 2);

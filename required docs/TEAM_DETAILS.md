@@ -13,12 +13,12 @@ This file contains the details of the team members who developed and contributed
 
 ## Team Members
 
-| Name | Roll Number / Student ID | Department | Email Address | Project Contribution / Role |
+| Name | Roll Number / Student ID | Department | Project Contribution / Role |
 | :--- | :--- | :--- | :--- | :--- |
 | **[Ajai Selvaraj]** | `[7376242cb103]` | [Computer Science and Business Systems] | Team Lead, Frontend developer, UI design |
 | **[Akshai Selvaraj]** | `[7376242AD115]` | [AIDS] | Backend developer|
 | **[Rakshana Senthil Kumar]** | `[7376252Al195]` | [AIML] | Testing, Documentation & Quality Assurance |
-| **[Sahithya k]** | `[7376252Al]` | [AIML] | Project Management & Architecture|
+| **[Sahithya k]** | `[7376252Al204]` | [AIML] | Project Management & Architecture|
 
 ---
 

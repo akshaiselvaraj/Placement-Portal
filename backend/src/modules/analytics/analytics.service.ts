@@ -203,7 +203,10 @@ export class AnalyticsService {
     let totalSalaryVal = 0;
     let salaryCount = 0;
     selectedApplications.forEach((app) => {
-      if (app.job.salaryMax) {
+      if (app.ctc && app.ctc > 0) {
+        totalSalaryVal += app.ctc * 100000;
+        salaryCount++;
+      } else if (app.job.salaryMax) {
         totalSalaryVal += app.job.salaryMax;
         salaryCount++;
       } else if (app.job.salaryMin) {

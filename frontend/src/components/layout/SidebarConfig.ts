@@ -46,7 +46,7 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
   STUDENT: [
     { title: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
     { title: 'Profile', href: '/student/profile', icon: Users },
-    { title: 'Resume Builder', href: '/student/resume', icon: FileText },
+    { title: 'Resume Builder', href: '/student/resumes', icon: FileText },
     { title: 'Portfolio Generator', href: '/student/portfolio', icon: FolderHeart },
     { title: 'Browse Jobs', href: '/student/jobs', icon: Briefcase },
     { title: 'My Applications', href: '/student/applications', icon: ClipboardList },

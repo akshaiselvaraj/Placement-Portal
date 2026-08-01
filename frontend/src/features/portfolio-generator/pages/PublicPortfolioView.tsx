@@ -30,11 +30,15 @@ export function PublicPortfolioView() {
     );
   }
 
+  const theme = publicPortfolio.themeId;
+  let bgClass = 'bg-slate-50 dark:bg-slate-900';
+  if (theme === 'neon') bgClass = 'bg-slate-950';
+  else if (theme === 'emerald') bgClass = 'bg-stone-950';
+  else if (theme === 'dark-mode') bgClass = 'bg-zinc-950';
+
   return (
-    <div className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 flex justify-center">
-      <div className="max-w-4xl w-full">
-        <PortfolioPreview themeId={publicPortfolio.themeId} data={publicPortfolio.data} />
-      </div>
+    <div className="min-h-screen">
+      <PortfolioPreview themeId={publicPortfolio.themeId} data={publicPortfolio.data} />
     </div>
   );
 }

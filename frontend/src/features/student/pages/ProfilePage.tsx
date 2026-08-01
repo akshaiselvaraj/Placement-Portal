@@ -84,8 +84,28 @@ export function ProfilePage() {
           
           <EducationSection
             educations={student.educations || []}
-            onAdd={addEducation}
-            onUpdate={(id, data) => updateEducation({ id, data })}
+            onAdd={async (data) => {
+              const { gradeType, ...payload } = data;
+              const res = await addEducation(payload);
+              if (gradeType === 'CGPA' && payload.grade) {
+                const numericCgpa = parseFloat(payload.grade);
+                if (!isNaN(numericCgpa)) {
+                  await updateProfile({ cgpa: numericCgpa });
+                }
+              }
+              return res;
+            }}
+            onUpdate={async (id, data) => {
+              const { gradeType, ...payload } = data;
+              const res = await updateEducation({ id, data: payload });
+              if (gradeType === 'CGPA' && payload.grade) {
+                const numericCgpa = parseFloat(payload.grade);
+                if (!isNaN(numericCgpa)) {
+                  await updateProfile({ cgpa: numericCgpa });
+                }
+              }
+              return res;
+            }}
             onDelete={deleteEducation}
           />
 

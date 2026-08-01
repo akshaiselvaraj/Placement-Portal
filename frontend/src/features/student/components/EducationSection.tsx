@@ -20,6 +20,7 @@ export function EducationSection({ educations, onAdd, onUpdate, onDelete }: Educ
   const [startYear, setStartYear] = useState<number>(new Date().getFullYear() - 4);
   const [endYear, setEndYear] = useState<number | null>(new Date().getFullYear());
   const [grade, setGrade] = useState('');
+  const [gradeType, setGradeType] = useState<'CGPA' | 'GRADE'>('CGPA');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,6 +31,7 @@ export function EducationSection({ educations, onAdd, onUpdate, onDelete }: Educ
     setStartYear(new Date().getFullYear() - 4);
     setEndYear(new Date().getFullYear());
     setGrade('');
+    setGradeType('CGPA');
     setEditingId(null);
   };
 
@@ -45,6 +47,11 @@ export function EducationSection({ educations, onAdd, onUpdate, onDelete }: Educ
     setStartYear(edu.startYear);
     setEndYear(edu.endYear);
     setGrade(edu.grade || '');
+    
+    // Auto detect if the grade looks like a float score or CGPA
+    const looksLikeCgpa = edu.grade ? !isNaN(Number(edu.grade)) || edu.grade.includes('.') : true;
+    setGradeType(looksLikeCgpa ? 'CGPA' : 'GRADE');
+    
     setEditingId(String(edu.id));
     setIsOpen(true);
   };
@@ -62,6 +69,7 @@ export function EducationSection({ educations, onAdd, onUpdate, onDelete }: Educ
         startYear: Number(startYear),
         endYear: endYear ? Number(endYear) : null,
         grade: grade || null,
+        gradeType,
       };
 
       if (editingId) {
@@ -200,7 +208,7 @@ export function EducationSection({ educations, onAdd, onUpdate, onDelete }: Educ
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
                     Start Year
@@ -215,7 +223,7 @@ export function EducationSection({ educations, onAdd, onUpdate, onDelete }: Educ
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
-                    End Year
+                    End Year (Or Expected)
                   </label>
                   <input
                     type="number"
@@ -225,15 +233,31 @@ export function EducationSection({ educations, onAdd, onUpdate, onDelete }: Educ
                     className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
-                    Grade/GPA
+                    Grade Type
+                  </label>
+                  <select
+                    value={gradeType}
+                    onChange={(e) => setGradeType(e.target.value as any)}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                  >
+                    <option value="CGPA">CGPA (0 - 10)</option>
+                    <option value="GRADE">Grade / Percentage</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
+                    {gradeType === 'CGPA' ? 'CGPA (e.g. 9.15)' : 'Grade (e.g. A+ or 90%)'}
                   </label>
                   <input
                     type="text"
                     value={grade}
                     onChange={(e) => setGrade(e.target.value)}
-                    placeholder="e.g. 3.9 / 4.0"
+                    placeholder={gradeType === 'CGPA' ? 'e.g. 9.15' : 'e.g. A+ or 90%'}
                     className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>

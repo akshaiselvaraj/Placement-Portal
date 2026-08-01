@@ -52,4 +52,13 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
     { title: 'Browse Jobs', href: '/student/jobs', icon: Briefcase },
     { title: 'My Applications', href: '/student/applications', icon: ClipboardList },
   ],
+  RECRUITER: [
+    { title: 'Dashboard', href: '/recruiter/dashboard', icon: LayoutDashboard },
+    { title: 'Job Postings', href: '/recruiter/jobs', icon: Briefcase },
+    { title: 'Applicants', href: '/recruiter/applicants', icon: ClipboardList },
+    { title: 'Candidate Search', href: '/recruiter/candidates', icon: Search },
+    { title: 'Interviews', href: '/recruiter/interviews', icon: Calendar },
+    { title: 'Hiring History', href: '/recruiter/history', icon: TrendingUp },
+    { title: 'Company Profile', href: '/recruiter/profile', icon: Building2 },
+  ],
 };

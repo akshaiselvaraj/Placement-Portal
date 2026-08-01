@@ -2,6 +2,7 @@ import prisma from '../../config/database';
 import { ApiError } from '../../utils/api-error';
 import { z } from 'zod';
 import type { createJobSchema, updateJobSchema, jobQuerySchema } from './job.schema';
+import { AtsService } from '../recruiter/ats.service';
 
 export class JobService {
   /**
@@ -9,7 +10,6 @@ export class JobService {
    * Verifies the recruiter belongs to the specified company.
    */
   static async createJob(userId: string, data: z.infer<typeof createJobSchema>) {
-    // Verify recruiter is part of the company
     const recruiter = await prisma.recruiterProfile.findUnique({
       where: { userId },
       select: { companyId: true },
@@ -19,7 +19,9 @@ export class JobService {
       throw ApiError.notFound('Recruiter profile not found');
     }
 
-    if (recruiter.companyId !== data.companyId) {
+    const companyId = data.companyId || recruiter.companyId;
+
+    if (recruiter.companyId !== companyId) {
       throw ApiError.forbidden('You can only post jobs for your own company');
     }
 
@@ -27,15 +29,24 @@ export class JobService {
       data: {
         title: data.title,
         description: data.description,
-        companyId: data.companyId,
+        companyId: companyId,
         type: data.type,
         location: data.location,
+        workMode: data.workMode || 'On-site',
+        employmentType: data.employmentType || 'Full-time',
         salaryMin: data.salaryMin ?? null,
         salaryMax: data.salaryMax ?? null,
         deadline: new Date(data.deadline),
-        status: data.status ?? 'DRAFT',
+        status: data.status ?? 'OPEN',
         eligibility: data.eligibility ?? null,
         requirements: data.requirements ?? null,
+        requiredSkills: data.requiredSkills || [],
+        preferredSkills: data.preferredSkills || [],
+        minCgpa: data.minCgpa ?? null,
+        eligibleDepartments: data.eligibleDepartments || [],
+        eligibleGradYears: data.eligibleGradYears || [],
+        requiredExperience: data.requiredExperience ?? 0,
+        openings: data.openings ?? 1,
         postedBy: userId,
       },
       include: {
@@ -58,7 +69,6 @@ export class JobService {
       throw ApiError.notFound('Job not found');
     }
 
-    // Verify ownership
     const recruiter = await prisma.recruiterProfile.findUnique({
       where: { userId },
       select: { companyId: true },
@@ -75,12 +85,21 @@ export class JobService {
         ...(data.description !== undefined && { description: data.description }),
         ...(data.type !== undefined && { type: data.type }),
         ...(data.location !== undefined && { location: data.location }),
+        ...(data.workMode !== undefined && { workMode: data.workMode }),
+        ...(data.employmentType !== undefined && { employmentType: data.employmentType }),
         ...(data.salaryMin !== undefined && { salaryMin: data.salaryMin }),
         ...(data.salaryMax !== undefined && { salaryMax: data.salaryMax }),
         ...(data.deadline !== undefined && { deadline: new Date(data.deadline) }),
         ...(data.status !== undefined && { status: data.status }),
         ...(data.eligibility !== undefined && { eligibility: data.eligibility }),
         ...(data.requirements !== undefined && { requirements: data.requirements }),
+        ...(data.requiredSkills !== undefined && { requiredSkills: data.requiredSkills }),
+        ...(data.preferredSkills !== undefined && { preferredSkills: data.preferredSkills }),
+        ...(data.minCgpa !== undefined && { minCgpa: data.minCgpa }),
+        ...(data.eligibleDepartments !== undefined && { eligibleDepartments: data.eligibleDepartments }),
+        ...(data.eligibleGradYears !== undefined && { eligibleGradYears: data.eligibleGradYears }),
+        ...(data.requiredExperience !== undefined && { requiredExperience: data.requiredExperience }),
+        ...(data.openings !== undefined && { openings: data.openings }),
       },
       include: {
         company: {
@@ -115,7 +134,7 @@ export class JobService {
   }
 
   /**
-   * Get all jobs posted by the recruiter's company.
+   * Get all jobs posted by the recruiter's company with applicant status breakdown.
    */
   static async getRecruiterJobs(userId: string, filters: z.infer<typeof jobQuerySchema>) {
     const recruiter = await prisma.recruiterProfile.findUnique({
@@ -143,20 +162,41 @@ export class JobService {
       whereClause.type = filters.type;
     }
 
-    return await prisma.job.findMany({
+    const jobs = await prisma.job.findMany({
       where: whereClause,
       include: {
         company: {
           select: { id: true, name: true, logo: true },
         },
+        applications: {
+          select: { status: true },
+        },
         _count: { select: { applications: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    return jobs.map((job) => {
+      const { applications, ...rest } = job;
+      const totalApplicants = applications.length;
+      const shortlisted = applications.filter((a) => a.status === 'SHORTLISTED' || a.status === 'UNDER_REVIEW').length;
+      const interviews = applications.filter((a) => a.status === 'INTERVIEWING').length;
+      const selected = applications.filter((a) => a.status === 'SELECTED' || a.status === 'HIRED').length;
+
+      return {
+        ...rest,
+        stats: {
+          totalApplicants,
+          shortlisted,
+          interviews,
+          selected,
+        },
+      };
+    });
   }
 
   /**
-   * Get a single job posting by ID, including applicant counts.
+   * Get a single job posting by ID.
    */
   static async getJobById(jobId: string) {
     const job = await prisma.job.findUnique({
@@ -176,7 +216,6 @@ export class JobService {
 
   /**
    * Public listing: Get all open jobs visible to students.
-   * Supports search and type filtering.
    */
   static async getPublicJobs(filters: z.infer<typeof jobQuerySchema>) {
     const whereClause: any = {
@@ -207,12 +246,17 @@ export class JobService {
   }
 
   /**
-   * Get eligibility check: compare student's CGPA against job eligibility threshold.
+   * Get eligibility check for student against a job posting.
    */
   static async checkEligibility(userId: string, jobId: string) {
     const student = await prisma.studentProfile.findUnique({
       where: { userId },
-      select: { id: true, cgpa: true, profileStatus: true },
+      include: {
+        skills: true,
+        educations: true,
+        projects: true,
+        certifications: true,
+      },
     });
 
     if (!student) {
@@ -227,16 +271,11 @@ export class JobService {
       throw ApiError.notFound('Job not found');
     }
 
-    // Parse CGPA threshold from eligibility text (e.g. "CGPA >= 7.0")
-    let minCgpa = 0;
-    if (job.eligibility) {
-      const match = job.eligibility.match(/(\d+\.?\d*)/);
-      if (match) {
-        minCgpa = parseFloat(match[1]);
-      }
-    }
-
-    const isEligible = (student.cgpa ?? 0) >= minCgpa;
+    const atsBreakdown = AtsService.calculateMatch(student, job);
+    const minCgpa = job.minCgpa ?? 0;
+    const isEligible = atsBreakdown.eligibility.departmentEligible &&
+                       atsBreakdown.eligibility.gradYearEligible &&
+                       (student.cgpa ?? 0) >= minCgpa;
     const isVerified = student.profileStatus === 'VERIFIED';
 
     return {
@@ -244,16 +283,23 @@ export class JobService {
       studentCgpa: student.cgpa,
       requiredCgpa: minCgpa,
       profileVerified: isVerified,
+      atsScore: atsBreakdown.score,
+      atsBreakdown,
     };
   }
 
   /**
-   * Apply to a job posting.
+   * Apply to a job posting and calculate rule-based ATS match score.
    */
   static async applyToJob(userId: string, jobId: string) {
     const student = await prisma.studentProfile.findUnique({
       where: { userId },
-      select: { id: true, cgpa: true, profileStatus: true },
+      include: {
+        skills: true,
+        educations: true,
+        projects: true,
+        certifications: true,
+      },
     });
 
     if (!student) {
@@ -276,23 +322,11 @@ export class JobService {
       throw ApiError.badRequest('This job is no longer accepting applications');
     }
 
-    // Check deadline
     if (new Date(job.deadline) < new Date()) {
       throw ApiError.badRequest('The application deadline has passed');
     }
 
-    // CGPA eligibility check
-    if (job.eligibility) {
-      const match = job.eligibility.match(/(\d+\.?\d*)/);
-      if (match) {
-        const minCgpa = parseFloat(match[1]);
-        if ((student.cgpa ?? 0) < minCgpa) {
-          throw ApiError.forbidden(`Your CGPA (${student.cgpa}) does not meet the minimum requirement (${minCgpa})`);
-        }
-      }
-    }
-
-    // Check for existing application
+    // Check existing application
     const existingApplication = await prisma.application.findUnique({
       where: {
         studentId_jobId: {
@@ -306,11 +340,24 @@ export class JobService {
       throw ApiError.conflict('You have already applied to this job');
     }
 
+    // Calculate Rule-Based ATS score & breakdown
+    const atsBreakdown = AtsService.calculateMatch(student, job);
+
     const application = await prisma.application.create({
       data: {
         studentId: student.id,
         jobId: jobId,
         status: 'APPLIED',
+        atsScore: atsBreakdown.score,
+        atsBreakdown: atsBreakdown as any,
+        statusHistory: {
+          create: {
+            fromStatus: null,
+            toStatus: 'APPLIED',
+            changedBy: userId,
+            notes: 'Application submitted by candidate',
+          },
+        },
       },
     });
 
@@ -319,11 +366,29 @@ export class JobService {
       data: {
         userId: userId,
         title: 'Application Submitted',
-        message: `Your application for "${job.title}" has been submitted successfully.`,
+        message: `Your application for "${job.title}" has been submitted successfully (ATS Match: ${atsBreakdown.score}%).`,
         type: 'SUCCESS',
         link: '/student/applications',
       },
     });
+
+    // Notify recruiters of company
+    const recruiters = await prisma.recruiterProfile.findMany({
+      where: { companyId: job.companyId },
+      select: { userId: true },
+    });
+
+    for (const r of recruiters) {
+      await prisma.notification.create({
+        data: {
+          userId: r.userId,
+          title: 'New Application Received',
+          message: `A candidate applied for "${job.title}" (ATS Match Score: ${atsBreakdown.score}%).`,
+          type: 'INFO',
+          link: '/recruiter/applicants',
+        },
+      });
+    }
 
     return application;
   }
@@ -350,6 +415,9 @@ export class JobService {
               select: { id: true, name: true, logo: true },
             },
           },
+        },
+        statusHistory: {
+          orderBy: { createdAt: 'asc' },
         },
       },
       orderBy: { appliedAt: 'desc' },
@@ -378,13 +446,23 @@ export class JobService {
       throw ApiError.forbidden('Application not found or access denied');
     }
 
-    if (application.status === 'SELECTED' || application.status === 'REJECTED') {
+    if (application.status === 'SELECTED' || application.status === 'HIRED' || application.status === 'REJECTED') {
       throw ApiError.badRequest('Cannot withdraw a finalized application');
     }
 
     return await prisma.application.update({
       where: { id: applicationId },
-      data: { status: 'WITHDRAWN' },
+      data: {
+        status: 'WITHDRAWN',
+        statusHistory: {
+          create: {
+            fromStatus: application.status,
+            toStatus: 'WITHDRAWN',
+            changedBy: userId,
+            notes: 'Application withdrawn by candidate',
+          },
+        },
+      },
     });
   }
 }

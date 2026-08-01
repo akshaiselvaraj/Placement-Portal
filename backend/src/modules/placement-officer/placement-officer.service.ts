@@ -9,8 +9,6 @@ export class PlacementOfficerService {
     const where: any = {};
     if (filters.status) {
       where.status = filters.status;
-    } else {
-      where.status = { not: 'DELETED' };
     }
     if (filters.batchYear) {
       where.batchYear = parseInt(filters.batchYear, 10);

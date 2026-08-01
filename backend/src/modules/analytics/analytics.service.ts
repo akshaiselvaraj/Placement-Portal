@@ -121,7 +121,7 @@ export class AnalyticsService {
 
     // Filter student profile query clause
     const studentWhereClause: any = {};
-    if (batch) studentWhereClause.batch = batch;
+    if (batch) studentWhereClause.batch = { contains: batch, mode: 'insensitive' };
     if (department) studentWhereClause.department = department;
 
     // Get totals
@@ -135,7 +135,7 @@ export class AnalyticsService {
         ...studentWhereClause,
         applications: {
           some: {
-            status: 'SELECTED',
+            status: { in: ['SELECTED', 'HIRED'] },
           },
         },
       },
@@ -154,7 +154,7 @@ export class AnalyticsService {
 
     // Department Breakdown
     const studentProfiles = await prisma.studentProfile.findMany({
-      where: batch ? { batch } : undefined,
+      where: batch ? { batch: { contains: batch, mode: 'insensitive' } } : undefined,
       select: {
         department: true,
         applications: {
@@ -172,7 +172,7 @@ export class AnalyticsService {
         departmentBreakdown[dep] = { total: 0, placed: 0, rate: 0 };
       }
       departmentBreakdown[dep].total += 1;
-      const isPlaced = profile.applications.some((app) => app.status === 'SELECTED');
+      const isPlaced = profile.applications.some((app) => ['SELECTED', 'HIRED'].includes(app.status));
       if (isPlaced) {
         departmentBreakdown[dep].placed += 1;
       }
@@ -187,7 +187,7 @@ export class AnalyticsService {
     // Average salary package offered to selected/placed candidates
     const selectedApplications = await prisma.application.findMany({
       where: {
-        status: 'SELECTED',
+        status: { in: ['SELECTED', 'HIRED'] },
         student: studentWhereClause,
       },
       include: {

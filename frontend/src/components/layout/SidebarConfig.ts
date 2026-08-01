@@ -44,15 +44,6 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
     { title: 'Publish Results', href: '/placement/results', icon: Layers },
     { title: 'Placement Analytics', href: '/placement/analytics', icon: BarChart3 },
   ],
-  RECRUITER: [
-    { title: 'Dashboard', href: '/recruiter/dashboard', icon: LayoutDashboard },
-    { title: 'Company Profile', href: '/recruiter/company', icon: Building2 },
-    { title: 'Manage Jobs', href: '/recruiter/jobs', icon: Briefcase },
-    { title: 'Applicants', href: '/recruiter/applicants', icon: Users },
-    { title: 'Candidate Search', href: '/recruiter/candidates', icon: Search },
-    { title: 'Interviews', href: '/recruiter/interviews', icon: Calendar },
-    { title: 'Hiring History', href: '/recruiter/hiring-history', icon: TrendingUp },
-  ],
   STUDENT: [
     { title: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
     { title: 'Profile', href: '/student/profile', icon: Users },

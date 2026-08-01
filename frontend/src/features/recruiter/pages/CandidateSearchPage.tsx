@@ -7,11 +7,12 @@ import { Search, Users, GraduationCap, Globe, Star } from 'lucide-react';
 export function CandidateSearchPage() {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [showAll, setShowAll] = useState(false);
 
   const { data: candidates, isLoading } = useQuery({
-    queryKey: ['candidate-search', debouncedQuery],
-    queryFn: () => recruiterService.searchCandidates(debouncedQuery),
-    enabled: debouncedQuery.length >= 2,
+    queryKey: ['candidate-search', debouncedQuery, showAll],
+    queryFn: () => recruiterService.searchCandidates(showAll && debouncedQuery.length < 2 ? '' : debouncedQuery),
+    enabled: showAll || debouncedQuery.length >= 2,
   });
 
   const handleSearch = (val: string) => {
@@ -29,26 +30,37 @@ export function CandidateSearchPage() {
         </p>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative max-w-xl">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[hsl(var(--text-muted))]" />
-        <input
-          type="text"
-          placeholder="Search by name, skill, department, email..."
-          value={query}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] text-[hsl(var(--text-primary))] shadow-xs"
-          autoFocus
-        />
+      {/* Search Bar & Show All Toggle */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center max-w-2xl">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[hsl(var(--text-muted))]" />
+          <input
+            type="text"
+            placeholder="Search by name, skill, department, email..."
+            value={query}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] text-[hsl(var(--text-primary))] shadow-xs"
+            autoFocus
+          />
+        </div>
+        <label className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] cursor-pointer select-none text-sm text-[hsl(var(--text-secondary))] shrink-0 hover:bg-[hsl(var(--border)/0.2)] transition-colors">
+          <input
+            type="checkbox"
+            checked={showAll}
+            onChange={(e) => setShowAll(e.target.checked)}
+            className="rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--primary))]"
+          />
+          <span>Show All Candidates</span>
+        </label>
       </div>
 
       {/* Results */}
-      {!debouncedQuery || debouncedQuery.length < 2 ? (
+      {!showAll && (!debouncedQuery || debouncedQuery.length < 2) ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Users className="h-14 w-14 text-[hsl(var(--text-muted))] mb-4" />
           <h3 className="text-lg font-bold text-[hsl(var(--text-primary))]">Start Searching</h3>
           <p className="text-sm text-[hsl(var(--text-secondary))] mt-1 max-w-sm">
-            Type at least 2 characters to search the candidate database.
+            Type at least 2 characters or check "Show All Candidates" to search the database.
           </p>
         </div>
       ) : isLoading ? (
@@ -61,7 +73,9 @@ export function CandidateSearchPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          <p className="text-xs text-[hsl(var(--text-muted))] font-medium">{candidates.length} result{candidates.length !== 1 ? 's' : ''} for "{debouncedQuery}"</p>
+          <p className="text-xs text-[hsl(var(--text-muted))] font-medium">
+            {candidates.length} result{candidates.length !== 1 ? 's' : ''} {debouncedQuery ? `for "${debouncedQuery}"` : 'in database'}
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {candidates.map((c: any) => (
               <div

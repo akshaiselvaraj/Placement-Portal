@@ -3,7 +3,7 @@
 A centralized platform for managing campus placements.
 
 ## Live Deployment Links
-*   **Live Application URL:** [https://placement-portal-demo.vercel.app](https://placement-portal-demo.vercel.app) *(Update this link once your deployment goes live)*
+*   **Live Application URL:** [https://placement-portal-demo.vercel.app](https://placement-portal-cyan.vercel.app) *(Update this link once your deployment goes live)*
 *   **Production API Base URL:** [https://placement-portal-api.render.com](https://placement-portal-api.render.com) *(Update this link once your backend API goes live)*
 
 ## Project Submission Deliverables

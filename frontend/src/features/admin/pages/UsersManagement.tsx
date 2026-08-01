@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAdminData } from '../hooks/useAdminData';
 import { DataTable, SearchInput, LoadingSkeleton } from '@/components/common';
 import type { Column } from '@/components/common';
-import { Power, PowerOff, ShieldAlert } from 'lucide-react';
+import { Power, PowerOff } from 'lucide-react';
 import type { User } from '@/types';
 
 export function UsersManagement() {

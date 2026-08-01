@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { usePlacementData } from '../hooks/usePlacementData';
 import { LoadingSkeleton, EmptyState } from '@/components/common';
-import { Calendar, CheckSquare, Clock, Video, UserCheck, XCircle, Award } from 'lucide-react';
+import { Calendar, CheckSquare, Clock, UserCheck, XCircle, Award } from 'lucide-react';
 
 export function InterviewDesk() {
   const {

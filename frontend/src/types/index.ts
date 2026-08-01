@@ -60,7 +60,13 @@ export interface Company {
   industry: string | null;
   description: string | null;
   location: string | null;
+  email: string | null;
+  phone: string | null;
+  size: string | null;
+  foundedYear: number | null;
+  address: string | null;
   createdAt: string;
+  jobs?: Job[];
 }
 
 export interface Job {
@@ -70,15 +76,30 @@ export interface Job {
   companyId: string;
   type: string;
   location: string;
+  workMode: string | null;
+  employmentType: string | null;
   salaryMin: number | null;
   salaryMax: number | null;
   deadline: string;
   status: string;
   eligibility: string | null;
   requirements: string | null;
+  requiredSkills: string[];
+  preferredSkills: string[];
+  minCgpa: number | null;
+  eligibleDepartments: string[];
+  eligibleGradYears: number[];
+  requiredExperience: number | null;
+  openings: number | null;
   postedBy: string;
   company?: Company;
   createdAt: string;
+  stats?: {
+    totalApplicants: number;
+    shortlisted: number;
+    interviews: number;
+    selected: number;
+  };
   _count?: {
     applications: number;
   };
@@ -89,10 +110,27 @@ export interface Application {
   studentId: string;
   jobId: string;
   status: string;
+  atsScore: number | null;
+  atsBreakdown: Record<string, any> | null;
+  hiredAt: string | null;
+  joiningDate: string | null;
+  offerStatus: string | null;
   appliedAt: string;
   updatedAt: string;
   student?: StudentProfile;
   job?: Job;
+  statusHistory?: StatusHistory[];
+  interviews?: Interview[];
+}
+
+export interface StatusHistory {
+  id: string;
+  applicationId: string;
+  fromStatus: string | null;
+  toStatus: string;
+  changedBy: string | null;
+  notes: string | null;
+  createdAt: string;
 }
 
 export interface PlacementDrive {
@@ -113,9 +151,15 @@ export interface Interview {
   applicationId: string;
   driveId: string | null;
   date: string;
-  type: string;
+  time: string | null;
+  duration: number | null;
+  interviewer: string | null;
+  meetingLink: string | null;
+  roundType: string | null;
   location: string | null;
   status: string;
+  result: string | null;
+  feedback: string | null;
   notes: string | null;
   application?: Application;
   drive?: PlacementDrive;
@@ -167,6 +211,7 @@ export interface Resume {
   isApproved: boolean;
   createdAt: string;
   updatedAt: string;
+  student?: StudentProfile;
 }
 
 export interface Portfolio {
@@ -180,6 +225,7 @@ export interface Portfolio {
   isApproved: boolean;
   createdAt: string;
   updatedAt: string;
+  student?: StudentProfile;
 }
 
 export interface Notification {

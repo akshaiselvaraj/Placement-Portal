@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNotifications } from '../hooks/useNotifications';
-import { Bell, Check, Trash, ShieldCheck, Mail, Info, AlertTriangle, Briefcase, FileText } from 'lucide-react';
+import { Bell, Check, Trash, ShieldCheck, Info, AlertTriangle, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function NotificationsDropdown() {

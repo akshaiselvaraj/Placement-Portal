@@ -1,7 +1,7 @@
 import { usePlacementData } from '../hooks/usePlacementData';
 import { StatCard, DataTable, StatusBadge, LoadingSkeleton } from '@/components/common';
 import type { Column } from '@/components/common';
-import { Users, FileText, Globe, CheckSquare, ShieldCheck, ArrowUpRight } from 'lucide-react';
+import { FileText, Globe, CheckSquare, ShieldCheck, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Application } from '@/types';
 
@@ -13,7 +13,6 @@ export function PlacementDashboard() {
   }
 
   // Derive stats
-  const totalStudents = students.length;
   const pendingVerification = students.filter((s) => s.profileStatus === 'PENDING').length;
   const verifiedStudents = students.filter((s) => s.profileStatus === 'VERIFIED').length;
 

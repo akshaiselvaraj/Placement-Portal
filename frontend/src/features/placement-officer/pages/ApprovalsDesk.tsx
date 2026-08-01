@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { usePlacementData } from '../hooks/usePlacementData';
 import { LoadingSkeleton, EmptyState } from '@/components/common';
-import { CheckCircle2, XCircle, FileText, Globe, ExternalLink, ShieldCheck } from 'lucide-react';
+import { FileText, Globe, ExternalLink } from 'lucide-react';
 
 export function ApprovalsDesk() {
   const [activeTab, setActiveTab] = useState<'resumes' | 'portfolios'>('resumes');

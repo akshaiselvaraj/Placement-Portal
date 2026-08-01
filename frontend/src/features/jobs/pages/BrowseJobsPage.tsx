@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { usePublicJobs, useApplyToJob, useEligibilityCheck } from '../hooks/useJobs';
-import { LoadingSkeleton, StatusBadge } from '@/components/common';
+import { LoadingSkeleton } from '@/components/common';
 import type { Job } from '@/types';
 import {
   Search,

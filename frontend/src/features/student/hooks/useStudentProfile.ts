@@ -154,6 +154,17 @@ export function useStudentProfile() {
     },
   });
 
+  const reapplyProfileMutation = useMutation({
+    mutationFn: studentService.reapplyProfile,
+    onSuccess: () => {
+      toast.success('Profile resubmitted for verification');
+      invalidate();
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to resubmit profile');
+    },
+  });
+
   return {
     student: profileQuery.data,
     isLoading: profileQuery.isLoading,
@@ -164,6 +175,8 @@ export function useStudentProfile() {
     // Profile updates
     updateProfile: updateProfileMutation.mutateAsync,
     isUpdatingProfile: updateProfileMutation.isPending,
+    reapplyProfile: reapplyProfileMutation.mutateAsync,
+    isReapplyingProfile: reapplyProfileMutation.isPending,
 
     // Education CRUD
     addEducation: addEducationMutation.mutateAsync,

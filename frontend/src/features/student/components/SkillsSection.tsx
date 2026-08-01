@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, X, PlusCircle, Award } from 'lucide-react';
+import { Plus, X, Award } from 'lucide-react';
 import type { Skill } from '@/types';
 
 interface SkillsSectionProps {

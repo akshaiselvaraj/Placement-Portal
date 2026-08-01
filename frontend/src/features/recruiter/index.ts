@@ -1,5 +1,10 @@
 export { RecruiterDashboard } from './pages/RecruiterDashboard';
 export { ApplicantsPage } from './pages/ApplicantsPage';
+export { CompanyProfilePage } from './pages/CompanyProfilePage';
+export { CandidateDetailPage } from './pages/CandidateDetailPage';
+export { InterviewsPage } from './pages/InterviewsPage';
+export { HiringHistoryPage } from './pages/HiringHistoryPage';
+export { CandidateSearchPage } from './pages/CandidateSearchPage';
 export { useRecruiterData } from './hooks/useRecruiterData';
 export { recruiterService } from './services/recruiter.service';
 export { default } from './services/recruiter.service';

@@ -66,6 +66,11 @@ export const studentService = {
   deleteCertification: async (id: string): Promise<void> => {
     await api.delete<ApiResponse<null>>(`/students/certifications/${id}`);
   },
+
+  reapplyProfile: async (): Promise<StudentProfile> => {
+    const res = await api.post<ApiResponse<StudentProfile>>('/students/profile/reapply');
+    return res.data.data;
+  },
 };
 
 export default studentService;

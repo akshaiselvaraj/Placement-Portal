@@ -5,7 +5,7 @@ import { ProjectsSection } from '../components/ProjectsSection';
 import { SkillsSection } from '../components/SkillsSection';
 import { CertificationsSection } from '../components/CertificationsSection';
 import { StatusBadge, LoadingSkeleton } from '@/components/common';
-import { GraduationCap, Award, CheckCircle2, XCircle } from 'lucide-react';
+import { GraduationCap, XCircle } from 'lucide-react';
 
 export function ProfilePage() {
   const {
@@ -13,6 +13,8 @@ export function ProfilePage() {
     isLoading,
     isError,
     updateProfile,
+    reapplyProfile,
+    isReapplyingProfile,
     addEducation,
     updateEducation,
     deleteEducation,
@@ -75,6 +77,39 @@ export function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {student.profileStatus === 'REJECTED' && (
+        <div className="p-5 rounded-2xl border border-[hsl(var(--danger)/0.2)] bg-[hsl(var(--danger-light))] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs animate-in">
+          <div className="flex items-start gap-3.5">
+            <div className="p-2 rounded-lg bg-[hsl(var(--danger)/0.1)] text-[hsl(var(--danger))] shrink-0">
+              <XCircle className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-bold text-[hsl(var(--danger))] text-sm">
+                Profile Verification Rejected
+              </h4>
+              <p className="text-xs text-[hsl(var(--text-secondary))] leading-relaxed max-w-2xl font-semibold">
+                Your profile verification has been rejected by the Placement Officer. 
+                Please review your credentials, correct any issues, and reapply for verification. 
+                You will not be eligible to apply for jobs until your profile is verified.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={async () => {
+              try {
+                await reapplyProfile();
+              } catch (err) {
+                // error is handled by hook
+              }
+            }}
+            disabled={isReapplyingProfile}
+            className="px-5 py-2.5 text-xs font-bold text-white bg-[hsl(var(--danger))] hover:bg-[hsl(var(--danger)/0.9)] active:scale-95 transition-all rounded-xl disabled:opacity-50 shrink-0 shadow-xs cursor-pointer"
+          >
+            {isReapplyingProfile ? 'Resubmitting...' : 'Reapply for Verification'}
+          </button>
+        </div>
+      )}
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">

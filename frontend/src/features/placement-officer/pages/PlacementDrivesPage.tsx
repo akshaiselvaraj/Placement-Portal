@@ -18,9 +18,7 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
-  ChevronRight,
   DollarSign,
-  AlertCircle,
 } from 'lucide-react';
 
 export interface PlacementDriveItem {

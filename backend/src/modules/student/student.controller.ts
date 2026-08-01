@@ -14,6 +14,11 @@ export class StudentController {
     return ApiResponse.success(res, student, 'Student profile updated successfully');
   });
 
+  static reapplyProfile = asyncHandler(async (req: Request, res: Response) => {
+    const student = await StudentService.reapplyProfile(req.user!.id);
+    return ApiResponse.success(res, student, 'Student profile verification reapplied successfully');
+  });
+
   // --- Education Controller Methods ---
   static addEducation = asyncHandler(async (req: Request, res: Response) => {
     const edu = await StudentService.addEducation(req.user!.id, req.body);

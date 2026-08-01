@@ -8,20 +8,13 @@ import {
   List,
   Plus,
   Search,
-  Filter,
-  Building2,
   User,
   Clock,
   MapPin,
   Video,
-  CheckCircle2,
-  XCircle,
   MessageSquare,
   Edit,
   X,
-  ExternalLink,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 
 export interface InterviewSlot {

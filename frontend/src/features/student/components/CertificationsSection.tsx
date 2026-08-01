@@ -150,7 +150,7 @@ export function CertificationsSection({ certifications, onAdd, onUpdate, onDelet
                   {cert.url && (
                     <button
                       type="button"
-                      onClick={() => handleViewCertificate(cert.url)}
+                      onClick={() => handleViewCertificate(cert.url!)}
                       className="inline-flex items-center gap-1 text-[hsl(var(--primary))] hover:underline cursor-pointer bg-transparent border-none p-0 text-[10px] font-semibold"
                     >
                       <ExternalLink className="h-3 w-3" />

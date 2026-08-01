@@ -3,7 +3,15 @@ import { RoleRedirect, ProtectedRoute } from '@/routes';
 import { LoginPage, RegisterPage } from '@/features/auth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StudentDashboard, ProfilePage } from '@/features/student';
-import { RecruiterDashboard, ApplicantsPage } from '@/features/recruiter';
+import {
+  RecruiterDashboard,
+  ApplicantsPage,
+  CompanyProfilePage,
+  CandidateDetailPage,
+  InterviewsPage,
+  HiringHistoryPage,
+  CandidateSearchPage,
+} from '@/features/recruiter';
 import {
   PlacementDashboard,
   StudentsManagement,
@@ -11,7 +19,7 @@ import {
   InterviewDesk,
   PlacementDrivesPage,
   ApplicationsPage,
-  InterviewsPage,
+  InterviewsPage as PlacementInterviewsPage,
   ResultsManagementPage,
 } from '@/features/placement-officer';
 import { AdminDashboard, UsersManagement, CompaniesManagement } from '@/features/admin';
@@ -136,7 +144,7 @@ export const router = createBrowserRouter([
         path: '/placement/interviews',
         element: (
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
-            <InterviewsPage />
+            <PlacementInterviewsPage />
           </ProtectedRoute>
         ),
       },
@@ -181,10 +189,50 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/recruiter/company',
+        element: (
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <CompanyProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/recruiter/applicants',
         element: (
           <ProtectedRoute allowedRoles={['RECRUITER']}>
             <ApplicantsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/recruiter/applicants/:applicationId',
+        element: (
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <CandidateDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/recruiter/candidates',
+        element: (
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <CandidateSearchPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/recruiter/interviews',
+        element: (
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <InterviewsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/recruiter/hiring-history',
+        element: (
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <HiringHistoryPage />
           </ProtectedRoute>
         ),
       },

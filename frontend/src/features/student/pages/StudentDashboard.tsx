@@ -1,7 +1,7 @@
 import { useStudentProfile } from '../hooks/useStudentProfile';
 import { StatCard, DataTable, StatusBadge, LoadingSkeleton } from '@/components/common';
 import type { Column } from '@/components/common';
-import { Briefcase, GraduationCap, Calendar, Clock, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Briefcase, GraduationCap, Calendar, Clock, CheckCircle2, ChevronRight, XCircle } from 'lucide-react';
 import type { Application } from '@/types';
 
 export function StudentDashboard() {
@@ -119,6 +119,31 @@ export function StudentDashboard() {
           Monitor your campus placement progress and manage your profile.
         </p>
       </div>
+
+      {student.profileStatus === 'REJECTED' && (
+        <div className="p-5 rounded-2xl border border-[hsl(var(--danger)/0.2)] bg-[hsl(var(--danger-light))] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs animate-in">
+          <div className="flex items-start gap-3.5">
+            <div className="p-2 rounded-lg bg-[hsl(var(--danger)/0.1)] text-[hsl(var(--danger))] shrink-0">
+              <XCircle className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-bold text-[hsl(var(--danger))] text-sm">
+                Action Required: Profile Verification Rejected
+              </h4>
+              <p className="text-xs text-[hsl(var(--text-secondary))] leading-relaxed font-semibold">
+                Your profile verification has been rejected by the Placement Officer. 
+                Please update your credentials and reapply on the Profile page to restore eligibility.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/student/profile"
+            className="px-5 py-2.5 text-xs font-bold text-white bg-[hsl(var(--danger))] hover:bg-[hsl(var(--danger)/0.9)] transition-colors rounded-xl text-center shadow-xs shrink-0 whitespace-nowrap cursor-pointer"
+          >
+            Go to Profile
+          </a>
+        </div>
+      )}
 
       {/* Placement Readiness Score card */}
       <div className="relative p-6 rounded-2xl border border-purple-500/10 bg-linear-to-r from-purple-500/10 via-indigo-500/5 to-transparent shadow-xs overflow-hidden flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6">
@@ -238,7 +263,7 @@ export function StudentDashboard() {
                         {int.application?.job?.company?.name}
                       </h4>
                       <p className="text-xs text-[hsl(var(--text-secondary))] font-medium">
-                        {int.type} Round
+                        {int.roundType} Round
                       </p>
                     </div>
                     <span className="px-2 py-0.5 rounded bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] text-[10px] font-bold tracking-wide uppercase">

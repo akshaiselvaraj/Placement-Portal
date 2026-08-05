@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { RoleRedirect, ProtectedRoute } from '@/routes';
 import { LoginPage, RegisterPage } from '@/features/auth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { StudentDashboard, ProfilePage } from '@/features/student';
+import { StudentDashboard, ProfilePage, AtsCheckPage } from '@/features/student';
 import {
   PlacementDashboard,
   StudentsManagement,
@@ -211,6 +211,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <StudentDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/student/ats-check',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <AtsCheckPage />
           </ProtectedRoute>
         ),
       },

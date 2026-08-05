@@ -20,6 +20,40 @@ export interface EligibilityResult {
   studentCgpa: number | null;
   requiredCgpa: number;
   profileVerified: boolean;
+  atsScore?: number;
+  atsBreakdown?: {
+    score: number;
+    weights: {
+      skills: number;
+      education: number;
+      cgpa: number;
+      experience: number;
+      certifications: number;
+      projects: number;
+    };
+    scores: {
+      skillsScore: number;
+      educationScore: number;
+      cgpaScore: number;
+      experienceScore: number;
+      certificationsScore: number;
+      projectsScore: number;
+    };
+    matchedSkills: string[];
+    missingSkills: string[];
+    eligibility: {
+      departmentEligible: boolean;
+      gradYearEligible: boolean;
+      cgpaEligible: boolean;
+    };
+    explanations: string[];
+    aiPlagiarismScore?: number;
+    aiPlagiarismReport?: {
+      score: number;
+      flaggedPhrases: string[];
+      explanation: string;
+    };
+  };
 }
 
 export const jobService = {

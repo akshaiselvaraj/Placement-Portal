@@ -19,6 +19,8 @@ import {
   X,
   Send,
   GraduationCap,
+  Award,
+  Cpu,
 } from 'lucide-react';
 
 const JOB_TYPES = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Remote'];
@@ -322,6 +324,93 @@ function JobDetailModal({ job, onClose, onApply, isApplying }: JobDetailModalPro
                     Profile verification: <strong>{eligibility.profileVerified ? 'Verified' : 'Pending'}</strong>
                   </p>
                 </div>
+
+                {eligibility.atsScore !== undefined && (
+                  <div className="mt-3 pt-3 border-t border-[hsl(var(--border))] space-y-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-[hsl(var(--text-primary))] flex items-center gap-1.5">
+                        <Award className="h-3.5 w-3.5 text-purple-500 animate-pulse" />
+                        ATS Match Score
+                      </span>
+                      <span className="font-extrabold text-purple-600 dark:text-purple-400">{eligibility.atsScore}%</span>
+                    </div>
+                    <div className="w-full bg-[hsl(var(--muted))] rounded-full h-2 overflow-hidden">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-550 ${
+                          eligibility.atsScore >= 80
+                            ? 'bg-emerald-500'
+                            : eligibility.atsScore >= 50
+                            ? 'bg-amber-500'
+                            : 'bg-rose-500'
+                        }`}
+                        style={{ width: `${eligibility.atsScore}%` }}
+                      />
+                    </div>
+
+                    {eligibility.atsBreakdown && (
+                      <div className="space-y-3 pt-1">
+                        {/* Matched / Missing skills */}
+                        {((eligibility.atsBreakdown.matchedSkills && eligibility.atsBreakdown.matchedSkills.length > 0) || 
+                          (eligibility.atsBreakdown.missingSkills && eligibility.atsBreakdown.missingSkills.length > 0)) && (
+                          <div className="space-y-2">
+                            <span className="text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider block">
+                              Skills Match Analysis
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {eligibility.atsBreakdown.matchedSkills?.map((skill: string) => (
+                                <span key={skill} className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
+                                  ✓ {skill}
+                                </span>
+                              ))}
+                              {eligibility.atsBreakdown.missingSkills?.map((skill: string) => (
+                                <span key={skill} className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold border border-rose-500/20">
+                                  ✗ {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Recommendations / explanations */}
+                        {eligibility.atsBreakdown.explanations && eligibility.atsBreakdown.explanations.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider block">
+                              Recommendations & Matching Info
+                            </span>
+                            <ul className="list-disc pl-4 text-[10px] text-[hsl(var(--text-secondary))] font-medium space-y-1">
+                              {eligibility.atsBreakdown.explanations.map((exp: string, idx: number) => {
+                                const isWarning = exp.includes('below') || exp.includes('not in') || exp.includes('Missing') || exp.includes('not provided');
+                                return (
+                                  <li key={idx} className={isWarning ? 'text-rose-500/90 dark:text-rose-400/90' : 'text-emerald-600/90 dark:text-emerald-400/90'}>
+                                    {exp}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        )}
+                        {/* AI Content / Plagiarism Score */}
+                        {eligibility.atsBreakdown.aiPlagiarismScore !== undefined && (
+                          <div className="pt-2.5 border-t border-[hsl(var(--border))] flex items-center justify-between text-[10px] mt-1.5">
+                            <span className="font-bold text-[hsl(var(--text-secondary))] flex items-center gap-1">
+                              <Cpu className="h-3 w-3 text-indigo-500" />
+                              AI Content Scanner
+                            </span>
+                            <span className={`font-extrabold px-1.5 py-0.5 rounded ${
+                              eligibility.atsBreakdown.aiPlagiarismScore >= 70
+                                ? 'bg-rose-500/10 text-rose-600 dark:text-rose-450'
+                                : eligibility.atsBreakdown.aiPlagiarismScore >= 35
+                                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-450'
+                                : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            }`}>
+                              {eligibility.atsBreakdown.aiPlagiarismScore}% {eligibility.atsBreakdown.aiPlagiarismScore >= 70 ? 'AI Generated' : eligibility.atsBreakdown.aiPlagiarismScore >= 35 ? 'Mixed Content' : 'Human Written'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

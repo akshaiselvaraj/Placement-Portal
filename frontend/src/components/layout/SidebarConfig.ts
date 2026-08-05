@@ -15,6 +15,7 @@ import {
   Search,
   TrendingUp,
   Shield,
+  Award,
 } from 'lucide-react';
 import type { RoleType } from '@/lib/constants';
 
@@ -50,6 +51,7 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
     { title: 'Resume Builder', href: '/student/resumes', icon: FileText },
     { title: 'Portfolio Generator', href: '/student/portfolio', icon: FolderHeart },
     { title: 'Browse Jobs', href: '/student/jobs', icon: Briefcase },
+    { title: 'ATS Checker', href: '/student/ats-check', icon: Award },
     { title: 'My Applications', href: '/student/applications', icon: ClipboardList },
   ],
   RECRUITER: [

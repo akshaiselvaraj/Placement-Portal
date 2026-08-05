@@ -472,7 +472,7 @@ export class RecruiterService {
       throw ApiError.notFound('Recruiter profile not found');
     }
 
-    const whereClause = query && query.trim()
+    const whereClause: any = query && query.trim()
       ? {
           OR: [
             { user: { name: { contains: query, mode: 'insensitive' } } },

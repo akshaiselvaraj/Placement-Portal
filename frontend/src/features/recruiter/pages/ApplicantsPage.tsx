@@ -292,6 +292,19 @@ export function ApplicantsPage() {
                     </td>
                     <td className="px-4 py-3 min-w-[120px]">
                       <AtsScoreBar score={app.atsScore || 0} />
+                      {app.atsBreakdown && typeof app.atsBreakdown === 'object' && 'aiPlagiarismScore' in app.atsBreakdown && (
+                        <div className="mt-1 flex items-center gap-1 text-[10px] font-extrabold tracking-wide uppercase">
+                          <span className={`px-1.5 py-0.5 rounded ${
+                            (app.atsBreakdown as any).aiPlagiarismScore >= 70
+                              ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                              : (app.atsBreakdown as any).aiPlagiarismScore >= 35
+                              ? 'bg-amber-500/10 text-amber-550 border border-amber-500/20'
+                              : 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                          }`}>
+                            AI Content: {(app.atsBreakdown as any).aiPlagiarismScore}%
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell">
                       <span className="text-sm font-bold text-[hsl(var(--text-primary))]">

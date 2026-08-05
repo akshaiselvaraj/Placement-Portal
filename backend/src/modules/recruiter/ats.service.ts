@@ -24,6 +24,12 @@ export interface AtsBreakdown {
     cgpaEligible: boolean;
   };
   explanations: string[];
+  aiPlagiarismScore?: number;
+  aiPlagiarismReport?: {
+    score: number;
+    flaggedPhrases: string[];
+    explanation: string;
+  };
 }
 
 export class AtsService {
@@ -61,6 +67,71 @@ export class AtsService {
     };
 
     return aliases[clean] || clean;
+  }
+
+  public static checkAiPlagiarism(text: string): { score: number; flaggedPhrases: string[]; explanation: string } {
+    if (!text || text.trim().length === 0) {
+      return { score: 0, flaggedPhrases: [], explanation: 'No text provided to analyze.' };
+    }
+
+    const aiBuzzwords = [
+      'delve', 'testament', 'spearheaded', 'synergy', 'innovative',
+      'transformative', 'revolutionary', 'leverage', 'robust', 'meticulously',
+      'ecosystem', 'fostered', 'streamlined', 'seamlessly', 'cutting-edge',
+      'rapidly evolving', 'not only', 'but also', 'pioneered', 'impactful',
+      'utilized', 'harnessed', 'furthermore', 'moreover', 'in conclusion',
+      'designed to', 'demystify', 'elevate', 'groundbreaking', 'vibrant'
+    ];
+
+    const textLower = text.toLowerCase();
+    const flaggedPhrases: string[] = [];
+
+    aiBuzzwords.forEach((word) => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      const matches = textLower.match(regex);
+      if (matches && matches.length > 0) {
+        flaggedPhrases.push(word);
+      }
+    });
+
+    if (textLower.includes('not only') && textLower.includes('but also')) {
+      if (!flaggedPhrases.includes('not only... but also')) {
+        flaggedPhrases.push('not only... but also');
+      }
+    }
+
+    const wordCount = text.split(/\s+/).filter(w => w.length > 0).length || 1;
+    const uniqueFlaggedCount = flaggedPhrases.length;
+
+    let densityFactor = 15;
+    if (wordCount > 150) {
+      densityFactor = 8;
+    } else if (wordCount > 80) {
+      densityFactor = 11;
+    }
+
+    let score = Math.min(100, Math.round(uniqueFlaggedCount * densityFactor));
+
+    const verbToVerbMatches = textLower.match(/\b[a-z]+ed\s+to\s+[a-z]+/g);
+    if (verbToVerbMatches && verbToVerbMatches.length > 2) {
+      score = Math.min(100, score + 10);
+      if (!flaggedPhrases.includes('repetitive "verb-ed to..." structure')) {
+        flaggedPhrases.push('repetitive "verb-ed to..." structure');
+      }
+    }
+
+    let explanation = 'Text appears highly human-written with organic structure and minimal AI jargon.';
+    if (score >= 70) {
+      explanation = 'Highly likely to be AI-generated (e.g. ChatGPT). It contains a high density of common AI transitional keywords and robotic resume phrasing.';
+    } else if (score >= 35) {
+      explanation = 'Possibly contains mixed AI and human-written content. Try rephrasing typical corporate jargon and adding specific project metrics.';
+    }
+
+    return {
+      score,
+      flaggedPhrases,
+      explanation
+    };
   }
 
   public static calculateMatch(candidate: any, job: any): AtsBreakdown {
@@ -161,7 +232,15 @@ export class AtsService {
     // 6. PROJECTS MATCHING (Weight: 5%)
     const projectsScore = projectCount > 0 ? 100 : 50;
 
-    // TOTAL WEIGHTED ATS SCORE
+    // Calculate AI plagiarism on bio and project descriptions
+    let combinedText = '';
+    if (candidate.bio) combinedText += ' ' + candidate.bio;
+    if (candidate.projects && Array.isArray(candidate.projects)) {
+      candidate.projects.forEach((proj: any) => {
+        if (proj.description) combinedText += ' ' + proj.description;
+      });
+    }
+    const aiPlagiarismReport = this.checkAiPlagiarism(combinedText);
     const weights = {
       skills: 0.50,
       education: 0.15,
@@ -245,6 +324,8 @@ export class AtsService {
         cgpaEligible,
       },
       explanations,
+      aiPlagiarismScore: aiPlagiarismReport.score,
+      aiPlagiarismReport,
     };
   }
 }

@@ -19,7 +19,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
 
   const renderNavItems = () => {
     return (
-      <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-4 py-5 space-y-1.5 overflow-y-auto">
         {items.map((item) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
@@ -29,13 +29,13 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               key={item.href}
               to={item.href}
               onClick={onCloseMobile}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                 isActive
-                  ? 'bg-[hsl(var(--primary))] text-white shadow-sm'
-                  : 'text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--text-primary))]'
+                  ? 'bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))] text-white shadow-md shadow-[hsl(var(--primary)/0.15)] scale-[1.02]'
+                  : 'text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--text-primary))] hover:translate-x-1'
               }`}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className="h-4.5 w-4.5 shrink-0" />
               <span>{item.title}</span>
             </Link>
           );
@@ -61,10 +61,12 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
         }`}
       >
         {/* Sidebar Header */}
-        <div className="h-(--navbar-height) px-6 border-b border-[hsl(var(--border))] flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 cursor-pointer">
-            <GraduationCap className="h-6 w-6 text-[hsl(var(--primary))]" />
-            <span className="font-extrabold text-base tracking-tight text-[hsl(var(--text-primary))]">
+        <div className="h-(--navbar-height) px-6 border-b border-[hsl(var(--border))/0.6] flex items-center justify-between bg-gradient-to-r from-[hsl(var(--surface))] to-[hsl(var(--muted))/0.2]">
+          <Link to="/" className="flex items-center gap-2.5 cursor-pointer group">
+            <div className="p-1.5 rounded-xl bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] group-hover:scale-110 transition-transform">
+              <GraduationCap className="h-5 w-5" />
+            </div>
+            <span className="font-black text-lg tracking-tight gradient-text">
               PlaceHub
             </span>
           </Link>

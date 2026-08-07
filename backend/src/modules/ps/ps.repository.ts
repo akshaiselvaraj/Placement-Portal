@@ -36,6 +36,16 @@ export class PSRepository implements IPSRepository {
       where: { userId },
       data: {
         psConnected: false,
+        psPushed: false,
+      },
+    });
+  }
+
+  async sharePSData(userId: string, shared: boolean): Promise<StudentProfile> {
+    return prisma.studentProfile.update({
+      where: { userId },
+      data: {
+        psPushed: shared,
       },
     });
   }

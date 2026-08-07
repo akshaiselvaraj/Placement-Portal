@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { usePS, useDisconnectPS } from '../hooks';
+import { usePS, useDisconnectPS, usePushPSData } from '../hooks';
 import { ConnectPSCard } from './ConnectPSCard';
 import { DisconnectDialog } from './DisconnectDialog';
 import { LoadingSkeleton } from '@/components/common';
@@ -11,6 +11,7 @@ export function PSCard() {
   const queryClient = useQueryClient();
   const { data: psData, isLoading, isError, refetch } = usePS();
   const { mutate: disconnectPS, isPending: isDisconnecting } = useDisconnectPS();
+  const { mutate: pushPSData, isPending: isPushing } = usePushPSData();
   const [isDisconnectOpen, setIsDisconnectOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -158,24 +159,44 @@ export function PSCard() {
               {formatSyncDate(psData.lastSynced)}
             </span>
           </div>
+
+          <div className="flex justify-between items-center text-xs py-1 border-b border-[hsl(var(--border))/0.3]">
+            <span className="text-[hsl(var(--text-secondary))] font-bold">Sharing Status</span>
+            <span className={`font-bold text-[11px] ${psData.psPushed ? 'text-emerald-600' : 'text-amber-500'}`}>
+              {psData.psPushed ? '🟢 Shared with PO' : '⚪ Not Shared with PO'}
+            </span>
+          </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex gap-3 pt-2">
-          <button
-            onClick={handleSyncNow}
-            disabled={isSyncing}
-            className="flex-1 py-2.5 text-xs font-bold text-white bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-hover))] rounded-xl transition-all cursor-pointer text-center shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
-          >
-            {isSyncing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            {isSyncing ? 'Syncing...' : 'Sync Now'}
-          </button>
-          <button
-            onClick={() => setIsDisconnectOpen(true)}
-            className="px-4 py-2.5 text-xs font-bold rounded-xl border border-[hsl(var(--border))] text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--text-primary))] transition-all cursor-pointer text-center"
-          >
-            Disconnect
-          </button>
+        <div className="flex flex-col gap-2 pt-2">
+          {!psData.psPushed && (
+            <button
+              onClick={() => pushPSData()}
+              disabled={isPushing}
+              className="w-full py-2.5 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-all cursor-pointer text-center shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
+            >
+              {isPushing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Push to Placement Officer
+            </button>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleSyncNow}
+              disabled={isSyncing}
+              className="flex-1 py-2.5 text-xs font-bold text-white bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-hover))] rounded-xl transition-all cursor-pointer text-center shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
+            >
+              {isSyncing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {isSyncing ? 'Syncing...' : 'Sync Now'}
+            </button>
+            <button
+              onClick={() => setIsDisconnectOpen(true)}
+              className="px-4 py-2.5 text-xs font-bold rounded-xl border border-[hsl(var(--border))] text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--text-primary))] transition-all cursor-pointer text-center"
+            >
+              Disconnect
+            </button>
+          </div>
         </div>
       </div>
 

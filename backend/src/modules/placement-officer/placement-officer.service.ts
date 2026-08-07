@@ -77,6 +77,9 @@ export class PlacementOfficerService {
         minCgpa: parseFloat(data.minCgpa || 0),
         minActivityPoints: data.minActivityPoints ? parseInt(data.minActivityPoints, 10) : 0,
         maxBacklogs: parseInt(data.maxBacklogs || 0, 10),
+        minPsLevel: data.minPsLevel || null,
+        min10thMarks: data.min10thMarks ? parseFloat(data.min10thMarks) : null,
+        min12thMarks: data.min12thMarks ? parseFloat(data.min12thMarks) : null,
         requiredSkills: data.requiredSkills || [],
         batchYear: data.batchYear ? parseInt(data.batchYear, 10) : null,
         openings: data.openings ? parseInt(data.openings, 10) : 1,
@@ -98,6 +101,8 @@ export class PlacementOfficerService {
     if (data.minCgpa) updateData.minCgpa = parseFloat(data.minCgpa);
     if (data.minActivityPoints !== undefined) updateData.minActivityPoints = data.minActivityPoints ? parseInt(data.minActivityPoints, 10) : 0;
     if (data.maxBacklogs) updateData.maxBacklogs = parseInt(data.maxBacklogs, 10);
+    if (data.min10thMarks !== undefined) updateData.min10thMarks = data.min10thMarks ? parseFloat(data.min10thMarks) : null;
+    if (data.min12thMarks !== undefined) updateData.min12thMarks = data.min12thMarks ? parseFloat(data.min12thMarks) : null;
     if (data.batchYear) updateData.batchYear = parseInt(data.batchYear, 10);
     if (data.openings) updateData.openings = parseInt(data.openings, 10);
 
@@ -129,6 +134,9 @@ export class PlacementOfficerService {
         minCgpa: source.minCgpa,
         minActivityPoints: source.minActivityPoints,
         maxBacklogs: source.maxBacklogs,
+        minPsLevel: source.minPsLevel,
+        min10thMarks: source.min10thMarks,
+        min12thMarks: source.min12thMarks,
         requiredSkills: source.requiredSkills,
         batchYear: source.batchYear,
         openings: source.openings,
@@ -268,8 +276,43 @@ export class PlacementOfficerService {
 
       // Activity Points
       const minActPoints = drive.minActivityPoints ?? 0;
-      if (minActPoints > 0 && (!student.activityPoints || student.activityPoints < minActPoints)) {
-        reasons.push(`Activity Points are ${student.activityPoints || 0}, below requirement of ${minActPoints}`);
+      if (minActPoints > 0) {
+        if (!student.psPushed) {
+          reasons.push("PS and Activity Points details are not shared with Placement Officer");
+        } else if (!student.activityPoints || student.activityPoints < minActPoints) {
+          reasons.push(`Activity Points are ${student.activityPoints || 0}, below requirement of ${minActPoints}`);
+        }
+      }
+
+      // PS Level Clearance
+      const requiredPsLevel = drive.minPsLevel;
+      if (requiredPsLevel && requiredPsLevel !== 'None') {
+        if (!student.psPushed) {
+          reasons.push("PS and Activity Points details are not shared with Placement Officer");
+        } else {
+          const parseLevelNum = (lvl: string | null | undefined): number => {
+            if (!lvl) return 0;
+            const m = lvl.match(/level\s*(\d+)/i);
+            if (m) return parseInt(m[1], 10);
+            const n = parseInt(lvl, 10);
+            return isNaN(n) ? 0 : n;
+          };
+          const studentLevelVal = parseLevelNum(student.levelClearance);
+          const requiredLevelVal = parseLevelNum(requiredPsLevel);
+          if (studentLevelVal < requiredLevelVal) {
+            reasons.push(`PS Level is ${student.levelClearance || 'None'}, below requirement of ${requiredPsLevel}`);
+          }
+        }
+      }
+
+      // 10th Marks
+      if (drive.min10thMarks && (!student.tenthMarks || student.tenthMarks < drive.min10thMarks)) {
+        reasons.push(`10th Marks are ${student.tenthMarks || 0}%, below requirement of ${drive.min10thMarks}%`);
+      }
+
+      // 12th Marks
+      if (drive.min12thMarks && (!student.twelfthMarks || student.twelfthMarks < drive.min12thMarks)) {
+        reasons.push(`12th Marks are ${student.twelfthMarks || 0}%, below requirement of ${drive.min12thMarks}%`);
       }
 
       // 2. Department
@@ -304,6 +347,10 @@ export class PlacementOfficerService {
         cgpa: student.cgpa,
         department: student.department,
         batch: student.batch,
+        psLevel: student.psPushed ? (student.levelClearance || 'None') : 'Not Shared',
+        tenthMarks: student.tenthMarks || 0,
+        twelfthMarks: student.twelfthMarks || 0,
+        activityPoints: student.psPushed ? (student.activityPoints || 0) : 0,
       };
 
       if (reasons.length === 0) {
@@ -508,7 +555,7 @@ export class PlacementOfficerService {
       const minVal = parseFloat(cgpaMin);
       if (!isNaN(minVal)) where.cgpa = { gte: minVal };
     }
-    return await prisma.studentProfile.findMany({
+    const students = await prisma.studentProfile.findMany({
       where,
       include: {
         user: { select: { id: true, name: true, email: true, avatar: true } },
@@ -519,6 +566,19 @@ export class PlacementOfficerService {
         documents: true,
       },
       orderBy: { rollNumber: 'asc' },
+    });
+
+    return students.map((student) => {
+      if (!student.psPushed) {
+        return {
+          ...student,
+          activityPoints: 0,
+          opportunityPoints: 0,
+          responsiveScore: 0,
+          levelClearance: 'Not Shared',
+        };
+      }
+      return student;
     });
   }
 

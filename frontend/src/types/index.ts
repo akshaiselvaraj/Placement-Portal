@@ -31,6 +31,7 @@ export interface StudentProfile {
   responsiveScore?: number | null;
   levelClearance?: string | null;
   psConnected?: boolean;
+  psPushed?: boolean;
   lastSynced?: string | null;
   user?: User;
   educations?: Education[];
@@ -103,6 +104,9 @@ export interface Job {
   preferredSkills: string[];
   minCgpa: number | null;
   minActivityPoints?: number | null;
+  minPsLevel?: string | null;
+  min10thMarks?: number | null;
+  min12thMarks?: number | null;
   eligibleDepartments: string[];
   eligibleGradYears: number[];
   requiredExperience: number | null;
@@ -176,6 +180,9 @@ export interface PlacementDrive {
   minCgpa?: number;
   minActivityPoints?: number;
   maxBacklogs?: number;
+  minPsLevel?: string | null;
+  min10thMarks?: number | null;
+  min12thMarks?: number | null;
   requiredSkills?: string[];
   batchYear?: number | null;
   openings?: number | null;

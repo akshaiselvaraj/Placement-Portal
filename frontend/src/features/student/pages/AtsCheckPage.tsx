@@ -390,6 +390,30 @@ export function AtsCheckPage() {
                           <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--border))] self-center" />
                         </>
                       )}
+                      {eligibility.requiredPsLevel !== undefined && eligibility.requiredPsLevel !== 'None' && (
+                        <>
+                          <div>
+                            PS Level: <strong className="text-[hsl(var(--text-primary))]">{eligibility.studentPsLevel || 'None'}</strong> (Required: <strong>{eligibility.requiredPsLevel}</strong>)
+                          </div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--border))] self-center" />
+                        </>
+                      )}
+                      {eligibility.required10thMarks !== undefined && eligibility.required10thMarks > 0 && (
+                        <>
+                          <div>
+                            10th Marks: <strong className="text-[hsl(var(--text-primary))]">{eligibility.student10thMarks ?? 0}%</strong> (Required: <strong>{eligibility.required10thMarks}%</strong>)
+                          </div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--border))] self-center" />
+                        </>
+                      )}
+                      {eligibility.required12thMarks !== undefined && eligibility.required12thMarks > 0 && (
+                        <>
+                          <div>
+                            12th Marks: <strong className="text-[hsl(var(--text-primary))]">{eligibility.student12thMarks ?? 0}%</strong> (Required: <strong>{eligibility.required12thMarks}%</strong>)
+                          </div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--border))] self-center" />
+                        </>
+                      )}
                       <div>
                         Profile: <strong className="text-[hsl(var(--text-primary))]">{eligibility.profileVerified ? 'Verified' : 'Unverified'}</strong>
                       </div>

@@ -42,8 +42,11 @@ export class JobService {
         requirements: data.requirements ?? null,
         requiredSkills: data.requiredSkills || [],
         preferredSkills: data.preferredSkills || [],
-        minCgpa: data.minCgpa ?? null,
+              minCgpa: data.minCgpa ?? null,
         minActivityPoints: data.minActivityPoints ?? 0,
+        minPsLevel: data.minPsLevel ?? null,
+        min10thMarks: data.min10thMarks ?? null,
+        min12thMarks: data.min12thMarks ?? null,
         eligibleDepartments: data.eligibleDepartments || [],
         eligibleGradYears: data.eligibleGradYears || [],
         requiredExperience: data.requiredExperience ?? 0,
@@ -98,6 +101,9 @@ export class JobService {
         ...(data.preferredSkills !== undefined && { preferredSkills: data.preferredSkills }),
         ...(data.minCgpa !== undefined && { minCgpa: data.minCgpa }),
         ...(data.minActivityPoints !== undefined && { minActivityPoints: data.minActivityPoints }),
+        ...(data.minPsLevel !== undefined && { minPsLevel: data.minPsLevel }),
+        ...(data.min10thMarks !== undefined && { min10thMarks: data.min10thMarks }),
+        ...(data.min12thMarks !== undefined && { min12thMarks: data.min12thMarks }),
         ...(data.eligibleDepartments !== undefined && { eligibleDepartments: data.eligibleDepartments }),
         ...(data.eligibleGradYears !== undefined && { eligibleGradYears: data.eligibleGradYears }),
         ...(data.requiredExperience !== undefined && { requiredExperience: data.requiredExperience }),
@@ -276,10 +282,29 @@ export class JobService {
     const atsBreakdown = AtsService.calculateMatch(student, job);
     const minCgpa = job.minCgpa ?? 0;
     const minActivityPoints = job.minActivityPoints ?? 0;
+    const required10th = job.min10thMarks ?? 0;
+    const required12th = job.min12thMarks ?? 0;
+    const requiredPsLevel = job.minPsLevel || 'None';
+
+    const parseLevelNum = (lvl: string | null | undefined): number => {
+      if (!lvl) return 0;
+      const m = lvl.match(/level\s*(\d+)/i);
+      if (m) return parseInt(m[1], 10);
+      const n = parseInt(lvl, 10);
+      return isNaN(n) ? 0 : n;
+    };
+
+    const isPsEligible = parseLevelNum(student.levelClearance) >= parseLevelNum(job.minPsLevel);
+    const is10thEligible = (student.tenthMarks ?? 0) >= required10th;
+    const is12thEligible = (student.twelfthMarks ?? 0) >= required12th;
+
     const isEligible = atsBreakdown.eligibility.departmentEligible &&
                        atsBreakdown.eligibility.gradYearEligible &&
                        (student.cgpa ?? 0) >= minCgpa &&
-                       (student.activityPoints ?? 0) >= minActivityPoints;
+                       (student.activityPoints ?? 0) >= minActivityPoints &&
+                       isPsEligible &&
+                       is10thEligible &&
+                       is12thEligible;
     const isVerified = student.profileStatus === 'VERIFIED';
 
     return {
@@ -288,6 +313,12 @@ export class JobService {
       requiredCgpa: minCgpa,
       studentActivityPoints: student.activityPoints ?? 0,
       requiredActivityPoints: minActivityPoints,
+      studentPsLevel: student.levelClearance || 'None',
+      requiredPsLevel: requiredPsLevel,
+      student10thMarks: student.tenthMarks ?? 0,
+      required10thMarks: required10th,
+      student12thMarks: student.twelfthMarks ?? 0,
+      required12thMarks: required12th,
       profileVerified: isVerified,
       atsScore: atsBreakdown.score,
       atsBreakdown,

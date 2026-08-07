@@ -23,6 +23,9 @@ export interface AtsBreakdown {
     gradYearEligible: boolean;
     cgpaEligible: boolean;
     activityPointsEligible: boolean;
+    psLevelEligible: boolean;
+    tenthMarksEligible: boolean;
+    twelfthMarksEligible: boolean;
   };
   explanations: string[];
   aiPlagiarismScore?: number;
@@ -218,6 +221,28 @@ export class AtsService {
     const candActivityPoints = candidate.activityPoints ?? 0;
     const activityPointsEligible = candActivityPoints >= minActivityPoints;
 
+    // PS Level Matching
+    const requiredPsLevel = job.minPsLevel;
+    const candPsLevel = candidate.levelClearance || 'None';
+    const parseLevelNum = (lvl: string | null | undefined): number => {
+      if (!lvl) return 0;
+      const m = lvl.match(/level\s*(\d+)/i);
+      if (m) return parseInt(m[1], 10);
+      const n = parseInt(lvl, 10);
+      return isNaN(n) ? 0 : n;
+    };
+    const psLevelEligible = parseLevelNum(candPsLevel) >= parseLevelNum(requiredPsLevel);
+
+    // 10th Marks Matching
+    const min10th = job.min10thMarks ?? 0;
+    const cand10th = candidate.tenthMarks ?? 0;
+    const tenthMarksEligible = cand10th >= min10th;
+
+    // 12th Marks Matching
+    const min12th = job.min12thMarks ?? 0;
+    const cand12th = candidate.twelfthMarks ?? 0;
+    const twelfthMarksEligible = cand12th >= min12th;
+
     // 5. EXPERIENCE MATCHING (Weight: 10%)
     let experienceScore = 100;
     const projectCount = (candidate.projects || []).length;
@@ -296,6 +321,30 @@ export class AtsService {
       }
     }
 
+    if (requiredPsLevel && requiredPsLevel !== 'None') {
+      if (psLevelEligible) {
+        explanations.push(`Candidate meets minimum PS Level requirement (${candPsLevel} ≥ ${requiredPsLevel}).`);
+      } else {
+        explanations.push(`Candidate PS Level (${candPsLevel}) is below the required minimum (${requiredPsLevel}).`);
+      }
+    }
+
+    if (min10th > 0) {
+      if (tenthMarksEligible) {
+        explanations.push(`Candidate meets minimum 10th Marks requirement (${cand10th}% ≥ ${min10th}%).`);
+      } else {
+        explanations.push(`Candidate 10th Marks (${cand10th}%) is below the required minimum (${min10th}%).`);
+      }
+    }
+
+    if (min12th > 0) {
+      if (twelfthMarksEligible) {
+        explanations.push(`Candidate meets minimum 12th Marks requirement (${cand12th}% ≥ ${min12th}%).`);
+      } else {
+        explanations.push(`Candidate 12th Marks (${cand12th}%) is below the required minimum (${min12th}%).`);
+      }
+    }
+
     if (eligibleDepartments.length > 0) {
       if (departmentEligible) {
         explanations.push(`Candidate department (${candidate.department || 'N/A'}) is eligible.`);
@@ -337,6 +386,9 @@ export class AtsService {
         gradYearEligible,
         cgpaEligible,
         activityPointsEligible,
+        psLevelEligible,
+        tenthMarksEligible,
+        twelfthMarksEligible,
       },
       explanations,
       aiPlagiarismScore: aiPlagiarismReport.score,

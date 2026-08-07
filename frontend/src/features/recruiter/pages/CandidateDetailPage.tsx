@@ -95,6 +95,9 @@ function AtsBreakdownPanel({ breakdown }: { breakdown: AtsBreakdown }) {
                   { label: 'Grad Year', ok: breakdown.eligibility.gradYearEligible },
                   { label: 'CGPA', ok: breakdown.eligibility.cgpaEligible },
                   { label: 'Activity Points', ok: breakdown.eligibility.activityPointsEligible },
+                  { label: 'PS Level', ok: breakdown.eligibility.psLevelEligible },
+                  { label: '10th Marks', ok: breakdown.eligibility.tenthMarksEligible },
+                  { label: '12th Marks', ok: breakdown.eligibility.twelfthMarksEligible },
                 ].map(({ label, ok }) => (
                   <span key={label} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${ok ? 'bg-[hsl(var(--success-light))] text-[hsl(var(--success))] border-[hsl(var(--success)/0.2)]' : 'bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))] border-[hsl(var(--danger)/0.2)]'}`}>
                     {ok ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}

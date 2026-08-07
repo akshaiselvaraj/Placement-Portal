@@ -95,6 +95,7 @@ model StudentProfile {
   responsiveScore   Int?            @default(0)
   levelClearance    String?
   psConnected       Boolean         @default(false)
+  psPushed          Boolean         @default(false)
   lastSynced        DateTime?
   educations     Education[]
   projects       Project[]
@@ -203,6 +204,9 @@ model Job {
   preferredSkills     String[]      @default([])
   minCgpa             Float?
   minActivityPoints   Int?          @default(0)
+  minPsLevel          String?
+  min10thMarks        Float?
+  min12thMarks        Float?
   eligibleDepartments String[]      @default([])
   eligibleGradYears   Int[]         @default([])
   requiredExperience  Float?        @default(0)
@@ -234,6 +238,9 @@ model PlacementDrive {
   minCgpa             Float?          @default(0)
   minActivityPoints   Int?            @default(0)
   maxBacklogs         Int?            @default(0)
+  minPsLevel          String?
+  min10thMarks        Float?
+  min12thMarks        Float?
   requiredSkills      String[]        @default([])
   batchYear           Int?
   openings            Int?            @default(1)

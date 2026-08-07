@@ -8,6 +8,9 @@ export const updateProfileSchema = z.object({
   github: z.string().url('Invalid URL').nullable().or(z.literal('')).optional(),
   website: z.string().url('Invalid URL').nullable().or(z.literal('')).optional(),
   cgpa: z.number().min(0).max(10).nullable().optional(),
+  tenthMarks: z.number().min(0).max(100).nullable().optional(),
+  twelfthMarks: z.number().min(0).max(100).nullable().optional(),
+  activityPoints: z.number().int().min(0).nullable().optional(),
 });
 
 export const educationSchema = z.object({

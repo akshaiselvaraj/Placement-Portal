@@ -18,6 +18,7 @@ export const createJobSchema = z.object({
   requiredSkills: z.array(z.string()).optional(),
   preferredSkills: z.array(z.string()).optional(),
   minCgpa: z.number().nullable().optional(),
+  minActivityPoints: z.number().int().min(0).nullable().optional(),
   eligibleDepartments: z.array(z.string()).optional(),
   eligibleGradYears: z.array(z.number()).optional(),
   requiredExperience: z.number().nullable().optional(),

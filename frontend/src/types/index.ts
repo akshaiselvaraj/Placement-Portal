@@ -24,6 +24,14 @@ export interface StudentProfile {
   linkedin: string | null;
   github: string | null;
   website: string | null;
+  tenthMarks?: number | null;
+  twelfthMarks?: number | null;
+  activityPoints?: number | null;
+  opportunityPoints?: number | null;
+  responsiveScore?: number | null;
+  levelClearance?: string | null;
+  psConnected?: boolean;
+  lastSynced?: string | null;
   user?: User;
   educations?: Education[];
   projects?: Project[];
@@ -94,6 +102,7 @@ export interface Job {
   requiredSkills: string[];
   preferredSkills: string[];
   minCgpa: number | null;
+  minActivityPoints?: number | null;
   eligibleDepartments: string[];
   eligibleGradYears: number[];
   requiredExperience: number | null;
@@ -165,6 +174,7 @@ export interface PlacementDrive {
   registrationDeadline?: string | null;
   departmentsEligible?: string[];
   minCgpa?: number;
+  minActivityPoints?: number;
   maxBacklogs?: number;
   requiredSkills?: string[];
   batchYear?: number | null;

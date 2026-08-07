@@ -1,0 +1,10 @@
+export { default as psRoutes } from './ps.routes';
+export * from './ps.controller';
+export * from './ps.service';
+export * from './ps.repository';
+export * from './ps.types';
+export * from './ps.dto';
+export * from './ps.errors';
+export * from './ps.constants';
+export * from './ps.interfaces';
+export * from './ps.validation';

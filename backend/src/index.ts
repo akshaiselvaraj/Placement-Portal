@@ -14,6 +14,7 @@ import { portfolioRoutes } from './modules/portfolio';
 import { notificationRoutes } from './modules/notification';
 import { jobRoutes } from './modules/job';
 import { analyticsRoutes } from './modules/analytics';
+import { psRoutes } from './modules/ps';
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api/resumes', resumeRoutes);
 app.use('/api/portfolios', portfolioRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/ps', psRoutes);
 
 // Error handling
 app.use(notFoundHandler);

@@ -75,6 +75,7 @@ export class PlacementOfficerService {
         registrationDeadline: data.registrationDeadline ? new Date(data.registrationDeadline) : null,
         departmentsEligible: data.departmentsEligible || [],
         minCgpa: parseFloat(data.minCgpa || 0),
+        minActivityPoints: data.minActivityPoints ? parseInt(data.minActivityPoints, 10) : 0,
         maxBacklogs: parseInt(data.maxBacklogs || 0, 10),
         requiredSkills: data.requiredSkills || [],
         batchYear: data.batchYear ? parseInt(data.batchYear, 10) : null,
@@ -95,6 +96,7 @@ export class PlacementOfficerService {
     if (data.registrationDeadline) updateData.registrationDeadline = new Date(data.registrationDeadline);
     if (data.package) updateData.package = parseFloat(data.package);
     if (data.minCgpa) updateData.minCgpa = parseFloat(data.minCgpa);
+    if (data.minActivityPoints !== undefined) updateData.minActivityPoints = data.minActivityPoints ? parseInt(data.minActivityPoints, 10) : 0;
     if (data.maxBacklogs) updateData.maxBacklogs = parseInt(data.maxBacklogs, 10);
     if (data.batchYear) updateData.batchYear = parseInt(data.batchYear, 10);
     if (data.openings) updateData.openings = parseInt(data.openings, 10);
@@ -125,6 +127,7 @@ export class PlacementOfficerService {
         employmentType: source.employmentType,
         departmentsEligible: source.departmentsEligible,
         minCgpa: source.minCgpa,
+        minActivityPoints: source.minActivityPoints,
         maxBacklogs: source.maxBacklogs,
         requiredSkills: source.requiredSkills,
         batchYear: source.batchYear,
@@ -261,6 +264,12 @@ export class PlacementOfficerService {
       // 1. CGPA
       if (drive.minCgpa && (!student.cgpa || student.cgpa < drive.minCgpa)) {
         reasons.push(`CGPA is ${student.cgpa || 0}, below requirement of ${drive.minCgpa}`);
+      }
+
+      // Activity Points
+      const minActPoints = drive.minActivityPoints ?? 0;
+      if (minActPoints > 0 && (!student.activityPoints || student.activityPoints < minActPoints)) {
+        reasons.push(`Activity Points are ${student.activityPoints || 0}, below requirement of ${minActPoints}`);
       }
 
       // 2. Department

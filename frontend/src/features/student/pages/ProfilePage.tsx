@@ -182,6 +182,24 @@ export function ProfilePage() {
                 </span>
               </div>
               <div className="flex justify-between py-2.5 font-medium">
+                <span className="text-[hsl(var(--text-secondary))]">10th Marks</span>
+                <span className="text-[hsl(var(--text-primary))] font-bold">
+                  {student.tenthMarks !== null && student.tenthMarks !== undefined ? `${student.tenthMarks.toFixed(1)}%` : 'N/A'}
+                </span>
+              </div>
+              <div className="flex justify-between py-2.5 font-medium">
+                <span className="text-[hsl(var(--text-secondary))]">12th Marks</span>
+                <span className="text-[hsl(var(--text-primary))] font-bold">
+                  {student.twelfthMarks !== null && student.twelfthMarks !== undefined ? `${student.twelfthMarks.toFixed(1)}%` : 'N/A'}
+                </span>
+              </div>
+              <div className="flex justify-between py-2.5 font-medium">
+                <span className="text-[hsl(var(--text-secondary))]">Activity Points</span>
+                <span className="text-[hsl(var(--text-primary))] font-bold">
+                  {student.activityPoints !== null && student.activityPoints !== undefined ? student.activityPoints : 'N/A'}
+                </span>
+              </div>
+              <div className="flex justify-between py-2.5 font-medium">
                 <span className="text-[hsl(var(--text-secondary))]">Applications Sent</span>
                 <span className="text-[hsl(var(--text-primary))] font-bold">
                   {student.applications?.length || 0}

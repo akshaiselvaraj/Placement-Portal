@@ -94,6 +94,7 @@ function AtsBreakdownPanel({ breakdown }: { breakdown: AtsBreakdown }) {
                   { label: 'Department', ok: breakdown.eligibility.departmentEligible },
                   { label: 'Grad Year', ok: breakdown.eligibility.gradYearEligible },
                   { label: 'CGPA', ok: breakdown.eligibility.cgpaEligible },
+                  { label: 'Activity Points', ok: breakdown.eligibility.activityPointsEligible },
                 ].map(({ label, ok }) => (
                   <span key={label} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${ok ? 'bg-[hsl(var(--success-light))] text-[hsl(var(--success))] border-[hsl(var(--success)/0.2)]' : 'bg-[hsl(var(--danger-light))] text-[hsl(var(--danger))] border-[hsl(var(--danger)/0.2)]'}`}>
                     {ok ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
@@ -355,6 +356,35 @@ export function CandidateDetailPage() {
                     <User className="h-4 w-4 text-[hsl(var(--primary))]" /> About
                   </h4>
                   <p className="text-sm text-[hsl(var(--text-secondary))] leading-relaxed">{student.bio}</p>
+                </div>
+              )}
+
+              {/* Academic Marks & Activities */}
+              {(student?.tenthMarks !== null || student?.twelfthMarks !== null || student?.activityPoints !== null) && (
+                <div className="p-5 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] space-y-4">
+                  <h4 className="text-sm font-bold text-[hsl(var(--text-primary))] flex items-center gap-2">
+                    <Award className="h-4 w-4 text-[hsl(var(--primary))]" /> Academic Scores & Activities
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {student?.tenthMarks !== null && student?.tenthMarks !== undefined && (
+                      <div className="p-3.5 rounded-xl bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
+                        <p className="text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">10th Marks</p>
+                        <p className="text-lg font-extrabold text-[hsl(var(--text-primary))] mt-1">{student.tenthMarks.toFixed(1)}%</p>
+                      </div>
+                    )}
+                    {student?.twelfthMarks !== null && student?.twelfthMarks !== undefined && (
+                      <div className="p-3.5 rounded-xl bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
+                        <p className="text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">12th Marks</p>
+                        <p className="text-lg font-extrabold text-[hsl(var(--text-primary))] mt-1">{student.twelfthMarks.toFixed(1)}%</p>
+                      </div>
+                    )}
+                    {student?.activityPoints !== null && student?.activityPoints !== undefined && (
+                      <div className="p-3.5 rounded-xl bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))]">
+                        <p className="text-[10px] font-bold text-[hsl(var(--text-muted))] uppercase tracking-wider">Activity Points</p>
+                        <p className="text-lg font-extrabold text-[hsl(var(--text-primary))] mt-1">{student.activityPoints}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

@@ -13,12 +13,16 @@ export interface CreateJobPayload {
   status?: string;
   eligibility?: string | null;
   requirements?: string | null;
+  minCgpa?: number | null;
+  minActivityPoints?: number | null;
 }
 
 export interface EligibilityResult {
   eligible: boolean;
   studentCgpa: number | null;
   requiredCgpa: number;
+  studentActivityPoints?: number;
+  requiredActivityPoints?: number;
   profileVerified: boolean;
   atsScore?: number;
   atsBreakdown?: {
@@ -45,6 +49,7 @@ export interface EligibilityResult {
       departmentEligible: boolean;
       gradYearEligible: boolean;
       cgpaEligible: boolean;
+      activityPointsEligible: boolean;
     };
     explanations: string[];
     aiPlagiarismScore?: number;

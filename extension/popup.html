@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BIT PS Connector</title>
+    <link rel="stylesheet" href="src/popup/popup.css" />
+  </head>
+  <body>
+    <div class="popup-container">
+      <!-- Header -->
+      <header class="header">
+        <div class="logo-container">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          <h1 class="title">BIT PS Connector</h1>
+        </div>
+      </header>
+
+      <!-- Status Panel -->
+      <div class="status-panel">
+        <div class="status-label">PS Portal Status</div>
+        <div id="status-badge" class="badge badge-disconnected">Checking...</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <main class="actions">
+        <button id="btn-check-login" class="btn btn-secondary">
+          Check Login Status
+        </button>
+        <button id="btn-connect" class="btn btn-primary" disabled>
+          Connect PS Account
+        </button>
+        <button id="btn-sync" class="btn btn-secondary" disabled>
+          Sync Now
+        </button>
+      </main>
+
+      <!-- Messages/Errors -->
+      <div id="message-container" class="message-box hidden"></div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <span class="version">v1.0.0</span>
+        <button id="btn-settings" class="btn-settings-icon" title="Extension Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </footer>
+    </div>
+    <script type="module" src="src/popup/popup.ts"></script>
+  </body>
+</html>

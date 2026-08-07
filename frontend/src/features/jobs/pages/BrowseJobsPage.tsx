@@ -319,6 +319,9 @@ function JobDetailModal({ job, onClose, onApply, isApplying }: JobDetailModalPro
                 </div>
                 <div className="text-xs text-[hsl(var(--text-secondary))] space-y-1">
                   <p>Your CGPA: <strong>{eligibility.studentCgpa ?? 'N/A'}</strong> | Required: <strong>{eligibility.requiredCgpa}</strong></p>
+                  {eligibility.requiredActivityPoints !== undefined && eligibility.requiredActivityPoints > 0 && (
+                    <p>Your Activity Points: <strong>{eligibility.studentActivityPoints ?? 0}</strong> | Required: <strong>{eligibility.requiredActivityPoints}</strong></p>
+                  )}
                   <p className="flex items-center gap-1">
                     <Shield className="h-3 w-3" />
                     Profile verification: <strong>{eligibility.profileVerified ? 'Verified' : 'Pending'}</strong>

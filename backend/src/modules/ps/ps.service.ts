@@ -47,7 +47,17 @@ export class PSService implements IPSService {
       }
 
       if (!coursesRes.ok) {
+        if (coursesRes.status === 401 || coursesRes.status === 403) {
+          throw ApiError.unauthorized('PS session expired or invalid. Please re-login to PS portal.');
+        }
         throw new SyncFailedError('Failed to fetch courses from PS Portal.');
+      }
+
+      const summaryContentType = summaryRes.headers.get('content-type') || '';
+      const coursesContentType = coursesRes.headers.get('content-type') || '';
+
+      if (!summaryContentType.includes('application/json') || !coursesContentType.includes('application/json')) {
+        throw ApiError.unauthorized('PS session expired or invalid. Please re-login to PS portal.');
       }
 
       summaryData = await summaryRes.json();

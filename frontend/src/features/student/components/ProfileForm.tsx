@@ -21,6 +21,9 @@ export function ProfileForm({ student, onUpdate }: ProfileFormProps) {
       linkedin: student.linkedin || '',
       github: student.github || '',
       website: student.website || '',
+      tenthMarks: student.tenthMarks !== null && student.tenthMarks !== undefined ? student.tenthMarks : '',
+      twelfthMarks: student.twelfthMarks !== null && student.twelfthMarks !== undefined ? student.twelfthMarks : '',
+      activityPoints: student.activityPoints !== null && student.activityPoints !== undefined ? student.activityPoints : '',
     },
   });
 
@@ -33,6 +36,9 @@ export function ProfileForm({ student, onUpdate }: ProfileFormProps) {
       linkedin: data.linkedin.trim() || null,
       github: data.github.trim() || null,
       website: data.website.trim() || null,
+      tenthMarks: data.tenthMarks !== '' && data.tenthMarks !== null && data.tenthMarks !== undefined ? Number(data.tenthMarks) : null,
+      twelfthMarks: data.twelfthMarks !== '' && data.twelfthMarks !== null && data.twelfthMarks !== undefined ? Number(data.twelfthMarks) : null,
+      activityPoints: data.activityPoints !== '' && data.activityPoints !== null && data.activityPoints !== undefined ? parseInt(data.activityPoints, 10) : null,
     };
     await onUpdate(payload);
   };
@@ -145,6 +151,54 @@ export function ProfileForm({ student, onUpdate }: ProfileFormProps) {
               type="url"
               placeholder="https://mywebsite.com"
               className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 pl-9 pr-3 text-sm text-[hsl(var(--text-primary))] placeholder-[hsl(var(--text-muted))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] transition-all"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-[hsl(var(--border))] pt-4">
+        <h4 className="text-sm font-bold text-[hsl(var(--text-primary))] mb-4">Academic & Activity Details</h4>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
+              10th Marks (%)
+            </label>
+            <input
+              {...register('tenthMarks')}
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              placeholder="e.g. 95.2"
+              className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] placeholder-[hsl(var(--text-muted))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
+              12th Marks (%)
+            </label>
+            <input
+              {...register('twelfthMarks')}
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              placeholder="e.g. 92.5"
+              className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] placeholder-[hsl(var(--text-muted))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] uppercase tracking-wider mb-1">
+              Activity Points
+            </label>
+            <input
+              {...register('activityPoints')}
+              type="number"
+              min="0"
+              placeholder="e.g. 100"
+              className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] placeholder-[hsl(var(--text-muted))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] transition-all"
             />
           </div>
         </div>

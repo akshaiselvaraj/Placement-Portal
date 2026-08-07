@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useStudentProfile } from '../hooks/useStudentProfile';
 import { usePublicJobs, useEligibilityCheck } from '@/features/jobs/hooks/useJobs';
 import { LoadingSkeleton, StatusBadge } from '@/components/common';
@@ -381,6 +382,14 @@ export function AtsCheckPage() {
                         Your CGPA: <strong className="text-[hsl(var(--text-primary))]">{eligibility.studentCgpa ?? 'N/A'}</strong> (Required: <strong>{eligibility.requiredCgpa}</strong>)
                       </div>
                       <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--border))] self-center" />
+                      {eligibility.requiredActivityPoints !== undefined && eligibility.requiredActivityPoints > 0 && (
+                        <>
+                          <div>
+                            Activity Points: <strong className="text-[hsl(var(--text-primary))]">{eligibility.studentActivityPoints ?? 0}</strong> (Required: <strong>{eligibility.requiredActivityPoints}</strong>)
+                          </div>
+                          <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--border))] self-center" />
+                        </>
+                      )}
                       <div>
                         Profile: <strong className="text-[hsl(var(--text-primary))]">{eligibility.profileVerified ? 'Verified' : 'Unverified'}</strong>
                       </div>
@@ -470,13 +479,13 @@ export function AtsCheckPage() {
                     )}
 
                     <div className="pt-2">
-                      <a
-                        href="/student/profile"
+                      <Link
+                        to="/student/profile"
                         className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-all shadow-md shadow-purple-600/10 cursor-pointer"
                       >
                         Go to Profile Builder
                         <ArrowRight className="h-3.5 w-3.5" />
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -658,12 +667,12 @@ export function AtsCheckPage() {
 
                   <div className="pt-4 border-t border-[hsl(var(--border))] flex items-center justify-between text-xs text-[hsl(var(--text-secondary))] font-medium">
                     <span>Need to append these missing keywords to your profile?</span>
-                    <a
-                      href="/student/profile"
+                    <Link
+                      to="/student/profile"
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[hsl(var(--muted))] hover:bg-[hsl(var(--border))] text-[hsl(var(--text-primary))] font-bold transition-all cursor-pointer"
                     >
                       Update Profile
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>

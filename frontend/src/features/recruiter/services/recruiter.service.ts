@@ -35,7 +35,7 @@ export interface AtsBreakdown {
   scores: { skillsScore: number; educationScore: number; cgpaScore: number; experienceScore: number; certificationsScore: number; projectsScore: number };
   matchedSkills: string[];
   missingSkills: string[];
-  eligibility: { departmentEligible: boolean; gradYearEligible: boolean; cgpaEligible: boolean };
+  eligibility: { departmentEligible: boolean; gradYearEligible: boolean; cgpaEligible: boolean; activityPointsEligible: boolean };
   explanations: string[];
 }
 
@@ -55,6 +55,7 @@ export interface CandidateDetails {
     requiredSkills: string[];
     preferredSkills: string[];
     minCgpa: number | null;
+    minActivityPoints?: number | null;
     eligibleDepartments: string[];
     eligibleGradYears: number[];
   };
@@ -63,6 +64,9 @@ export interface CandidateDetails {
     department: string;
     batch: string;
     cgpa: number | null;
+    tenthMarks?: number | null;
+    twelfthMarks?: number | null;
+    activityPoints?: number | null;
     phone: string | null;
     bio: string | null;
     linkedin: string | null;

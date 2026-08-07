@@ -22,6 +22,7 @@ export interface AtsBreakdown {
     departmentEligible: boolean;
     gradYearEligible: boolean;
     cgpaEligible: boolean;
+    activityPointsEligible: boolean;
   };
   explanations: string[];
   aiPlagiarismScore?: number;
@@ -212,7 +213,12 @@ export class AtsService {
       }
     }
 
-    // 4. EXPERIENCE MATCHING (Weight: 10%)
+    // 4. ACTIVITY POINTS MATCHING
+    const minActivityPoints = job.minActivityPoints ?? 0;
+    const candActivityPoints = candidate.activityPoints ?? 0;
+    const activityPointsEligible = candActivityPoints >= minActivityPoints;
+
+    // 5. EXPERIENCE MATCHING (Weight: 10%)
     let experienceScore = 100;
     const projectCount = (candidate.projects || []).length;
     const certCount = (candidate.certifications || []).length;
@@ -282,6 +288,14 @@ export class AtsService {
       }
     }
 
+    if (minActivityPoints > 0) {
+      if (activityPointsEligible) {
+        explanations.push(`Candidate meets minimum Activity Points requirement (${candActivityPoints} ≥ ${minActivityPoints}).`);
+      } else {
+        explanations.push(`Candidate Activity Points (${candActivityPoints}) is below the required minimum (${minActivityPoints}).`);
+      }
+    }
+
     if (eligibleDepartments.length > 0) {
       if (departmentEligible) {
         explanations.push(`Candidate department (${candidate.department || 'N/A'}) is eligible.`);
@@ -322,6 +336,7 @@ export class AtsService {
         departmentEligible,
         gradYearEligible,
         cgpaEligible,
+        activityPointsEligible,
       },
       explanations,
       aiPlagiarismScore: aiPlagiarismReport.score,

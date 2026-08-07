@@ -43,6 +43,7 @@ export class JobService {
         requiredSkills: data.requiredSkills || [],
         preferredSkills: data.preferredSkills || [],
         minCgpa: data.minCgpa ?? null,
+        minActivityPoints: data.minActivityPoints ?? 0,
         eligibleDepartments: data.eligibleDepartments || [],
         eligibleGradYears: data.eligibleGradYears || [],
         requiredExperience: data.requiredExperience ?? 0,
@@ -96,6 +97,7 @@ export class JobService {
         ...(data.requiredSkills !== undefined && { requiredSkills: data.requiredSkills }),
         ...(data.preferredSkills !== undefined && { preferredSkills: data.preferredSkills }),
         ...(data.minCgpa !== undefined && { minCgpa: data.minCgpa }),
+        ...(data.minActivityPoints !== undefined && { minActivityPoints: data.minActivityPoints }),
         ...(data.eligibleDepartments !== undefined && { eligibleDepartments: data.eligibleDepartments }),
         ...(data.eligibleGradYears !== undefined && { eligibleGradYears: data.eligibleGradYears }),
         ...(data.requiredExperience !== undefined && { requiredExperience: data.requiredExperience }),
@@ -273,15 +275,19 @@ export class JobService {
 
     const atsBreakdown = AtsService.calculateMatch(student, job);
     const minCgpa = job.minCgpa ?? 0;
+    const minActivityPoints = job.minActivityPoints ?? 0;
     const isEligible = atsBreakdown.eligibility.departmentEligible &&
                        atsBreakdown.eligibility.gradYearEligible &&
-                       (student.cgpa ?? 0) >= minCgpa;
+                       (student.cgpa ?? 0) >= minCgpa &&
+                       (student.activityPoints ?? 0) >= minActivityPoints;
     const isVerified = student.profileStatus === 'VERIFIED';
 
     return {
       eligible: isEligible && isVerified,
       studentCgpa: student.cgpa,
       requiredCgpa: minCgpa,
+      studentActivityPoints: student.activityPoints ?? 0,
+      requiredActivityPoints: minActivityPoints,
       profileVerified: isVerified,
       atsScore: atsBreakdown.score,
       atsBreakdown,

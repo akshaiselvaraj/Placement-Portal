@@ -88,6 +88,14 @@ model StudentProfile {
   linkedin       String?
   github         String?
   website        String?
+  tenthMarks     Float?
+  twelfthMarks   Float?
+  activityPoints    Int?            @default(0)
+  opportunityPoints Int?            @default(0)
+  responsiveScore   Int?            @default(0)
+  levelClearance    String?
+  psConnected       Boolean         @default(false)
+  lastSynced        DateTime?
   educations     Education[]
   projects       Project[]
   skills         Skill[]
@@ -173,6 +181,7 @@ model Job {
   requiredSkills      String[]      @default([])
   preferredSkills     String[]      @default([])
   minCgpa             Float?
+  minActivityPoints   Int?          @default(0)
   eligibleDepartments String[]      @default([])
   eligibleGradYears   Int[]         @default([])
   requiredExperience  Float?        @default(0)
@@ -202,6 +211,7 @@ model PlacementDrive {
   registrationDeadline DateTime?
   departmentsEligible String[]        @default([])
   minCgpa             Float?          @default(0)
+  minActivityPoints   Int?            @default(0)
   maxBacklogs         Int?            @default(0)
   requiredSkills      String[]        @default([])
   batchYear           Int?

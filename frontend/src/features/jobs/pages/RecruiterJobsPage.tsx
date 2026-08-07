@@ -50,6 +50,8 @@ export function RecruiterJobsPage() {
     status: 'DRAFT',
     eligibility: '',
     requirements: '',
+    minCgpa: null,
+    minActivityPoints: 0,
   });
 
   const openCreateModal = () => {
@@ -67,6 +69,8 @@ export function RecruiterJobsPage() {
       status: 'DRAFT',
       eligibility: '',
       requirements: '',
+      minCgpa: null,
+      minActivityPoints: 0,
     });
     setShowModal(true);
   };
@@ -86,6 +90,8 @@ export function RecruiterJobsPage() {
       status: job.status,
       eligibility: job.eligibility || '',
       requirements: job.requirements || '',
+      minCgpa: job.minCgpa,
+      minActivityPoints: job.minActivityPoints ?? 0,
     });
     setShowModal(true);
   };
@@ -96,6 +102,8 @@ export function RecruiterJobsPage() {
       ...form,
       salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
       salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
+      minCgpa: form.minCgpa ? Number(form.minCgpa) : null,
+      minActivityPoints: form.minActivityPoints ? parseInt(String(form.minActivityPoints), 10) : 0,
     };
     const cId = company?.id || form.companyId;
     if (cId) {
@@ -433,6 +441,34 @@ export function RecruiterJobsPage() {
                     placeholder="e.g. CGPA >= 7.0"
                     className="w-full px-4 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm text-[hsl(var(--text-primary))] placeholder-[hsl(var(--text-muted))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] mb-1.5 uppercase tracking-wide">
+                      Minimum CGPA
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={form.minCgpa ?? ''}
+                      onChange={(e) => setForm({ ...form, minCgpa: e.target.value ? Number(e.target.value) : null })}
+                      placeholder="e.g. 7.5"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] mb-1.5 uppercase tracking-wide">
+                      Min Activity Points
+                    </label>
+                    <input
+                      type="number"
+                      value={form.minActivityPoints ?? ''}
+                      onChange={(e) => setForm({ ...form, minActivityPoints: e.target.value ? parseInt(e.target.value, 10) : 0 })}
+                      placeholder="e.g. 100"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                    />
+                  </div>
                 </div>
 
                 {/* Requirements */}

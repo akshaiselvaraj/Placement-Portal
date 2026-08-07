@@ -52,6 +52,7 @@ export function PlacementDrivesPage() {
     openings: '1',
     bondDetails: '',
     requiredDocuments: 'Resume, Mark Sheets',
+    minActivityPoints: '0',
   });
 
   // Queries
@@ -148,6 +149,7 @@ export function PlacementDrivesPage() {
       openings: '1',
       bondDetails: '',
       requiredDocuments: 'Resume, Mark Sheets',
+      minActivityPoints: '0',
     });
     setEditingDrive(null);
     setIsCreateModalOpen(true);
@@ -174,6 +176,7 @@ export function PlacementDrivesPage() {
       openings: String(drive.openings || '1'),
       bondDetails: drive.bondDetails || '',
       requiredDocuments: drive.requiredDocuments?.join(', ') || '',
+      minActivityPoints: String(drive.minActivityPoints || '0'),
     });
     setIsCreateModalOpen(true);
   };
@@ -416,7 +419,7 @@ export function PlacementDrivesPage() {
               Eligibility Analysis Engine
             </h3>
             <p className="text-xs text-[hsl(var(--text-secondary))] mb-6">
-              Checking platform students against drive rules (Min CGPA: {viewingEligibilityDrive.minCgpa}, Backlogs: {viewingEligibilityDrive.maxBacklogs}, Departments: {viewingEligibilityDrive.departmentsEligible?.join(', ')}).
+              Checking platform students against drive rules (Min CGPA: {viewingEligibilityDrive.minCgpa}, Backlogs: {viewingEligibilityDrive.maxBacklogs}, Min Activity Points: {viewingEligibilityDrive.minActivityPoints ?? 0}, Departments: {viewingEligibilityDrive.departmentsEligible?.join(', ')}).
             </p>
 
             {isLoadingEligibility ? (
@@ -593,7 +596,7 @@ export function PlacementDrivesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
                     Minimum CGPA
@@ -615,6 +618,18 @@ export function PlacementDrivesPage() {
                     type="number"
                     value={formData.maxBacklogs}
                     onChange={(e) => setFormData((p) => ({ ...p, maxBacklogs: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Min Activity Points
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.minActivityPoints}
+                    onChange={(e) => setFormData((p) => ({ ...p, minActivityPoints: e.target.value }))}
                     className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>

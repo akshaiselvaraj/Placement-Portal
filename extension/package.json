@@ -1,0 +1,19 @@
+{
+  "name": "bit-ps-connector-extension",
+  "version": "1.0.0",
+  "description": "Chrome Extension to securely synchronize student PS statistics with the BIT Placement Management Portal.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && node build.js && node copy-manifest.js",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "^0.428.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.269",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.1"
+  }
+}

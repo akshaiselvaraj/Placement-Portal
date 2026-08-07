@@ -12,30 +12,46 @@ export class PSService implements IPSService {
     this.repository = repository;
   }
 
-  async connectPS(userId: string, cookie: string): Promise<StudentProfile> {
+  async connectPS(userId: string, cookie: string): Promise<any> {
     if (!cookie) {
       throw ApiError.badRequest('PS session cookie is required');
     }
 
-    // 1. Fetch data from BITSathy PS Summary endpoint
-    let responseData: any;
-    try {
-      const psResponse = await fetch('https://ps.bitsathy.ac.in/api/ps_v2/dashboard/v2/summary', {
-        headers: {
-          'Cookie': `PS=${cookie}`,
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        },
-      });
+    // 1. Fetch summary and courses in parallel (or sequential with error handling)
+    let summaryData: any;
+    let coursesData: any;
 
-      if (!psResponse.ok) {
-        if (psResponse.status === 401 || psResponse.status === 403) {
+    try {
+      const [summaryRes, coursesRes] = await Promise.all([
+        fetch('https://ps.bitsathy.ac.in/api/ps_v2/dashboard/v2/summary', {
+          headers: {
+            'Cookie': `PS=${cookie}`,
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          },
+        }),
+        fetch('https://ps.bitsathy.ac.in/api/ps_v2/courses', {
+          headers: {
+            'Cookie': `PS=${cookie}`,
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          },
+        })
+      ]);
+
+      if (!summaryRes.ok) {
+        if (summaryRes.status === 401 || summaryRes.status === 403) {
           throw ApiError.unauthorized('PS session expired or invalid. Please re-login to PS portal.');
         }
         throw new SyncFailedError('Failed to fetch summary from PS Portal.');
       }
 
-      responseData = await psResponse.json();
+      if (!coursesRes.ok) {
+        throw new SyncFailedError('Failed to fetch courses from PS Portal.');
+      }
+
+      summaryData = await summaryRes.json();
+      coursesData = await coursesRes.json();
     } catch (err: any) {
       if (err instanceof ApiError || err instanceof SyncFailedError) {
         throw err;
@@ -43,8 +59,8 @@ export class PSService implements IPSService {
       throw new SyncFailedError(`PS API connection failed: ${err.message || 'Network error'}`);
     }
 
-    // 2. Parse out Activity Points, Opportunity Points, Responsive Score
-    const points = responseData?.data?.points || [];
+    // 2. Parse out Activity Points, Opportunity Points, Responsive Score from summary response
+    const points = summaryData?.data?.points || [];
     let activityPoints = 0;
     let opportunityPoints = 0;
     let responsiveScore = 0;
@@ -60,16 +76,16 @@ export class PSService implements IPSService {
       }
     });
 
-    // Extract PS level clearance
-    if (responseData?.data?.level) {
-      levelClearance = String(responseData.data.level);
-    } else if (responseData?.data?.levelClearance) {
-      levelClearance = String(responseData.data.levelClearance);
-    } else if (responseData?.data?.profile?.level) {
-      levelClearance = String(responseData.data.profile.level);
+    // Extract PS level clearance safely
+    if (summaryData?.data?.profile?.level) {
+      levelClearance = String(summaryData.data.profile.level);
+    } else if (summaryData?.data?.level) {
+      levelClearance = String(summaryData.data.level);
+    } else if (summaryData?.data?.levelClearance) {
+      levelClearance = String(summaryData.data.levelClearance);
     }
 
-    // 3. Validate extracted values with Zod connectPSSchema
+    // Validate using Zod schema
     const validationResult = connectPSSchema.safeParse({
       activityPoints,
       opportunityPoints,
@@ -89,17 +105,45 @@ export class PSService implements IPSService {
       throw new PSValidationError(undefined, fieldErrors);
     }
 
+    // 3. Parse courses data
+    if (!Array.isArray(coursesData)) {
+      coursesData = [];
+    }
+
+    const coursesToSync = coursesData.map((course: any) => {
+      const totalLevels = Number(course.levels) || 0;
+      const completedLevels = Number(course.cleared) || 0;
+      const progressPercentage = totalLevels > 0 ? Math.round((completedLevels / totalLevels) * 100 * 100) / 100 : 0;
+      const status = (completedLevels === totalLevels && totalLevels > 0) ? 'COMPLETED' : 'IN_PROGRESS';
+      const imageUrl = course.img ? `https://ps.bitsathy.ac.in/images/courses/${course.img}` : null;
+
+      return {
+        courseId: String(course.id),
+        courseName: String(course.name || ''),
+        category: String(course.category || ''),
+        imageUrl,
+        completedLevels,
+        totalLevels,
+        progressPercentage,
+        status,
+      };
+    });
+
     // 4. Ensure Student profile exists
     const student = await this.repository.findByUserId(userId);
     if (!student) {
       throw ApiError.notFound('Student profile not found');
     }
 
-    // 5. Update student PS details
-    return this.repository.updatePSData(userId, validationResult.data);
+    // 5. Save updated profile points and bulk upsert courses within PostgreSQL transaction
+    await this.repository.updatePSData(userId, validationResult.data);
+    await this.repository.syncPSCourses(student.id, coursesToSync);
+
+    // 6. Return student profile along with the synced courses
+    return this.repository.findByUserId(userId);
   }
 
-  async getPSData(userId: string): Promise<StudentProfile> {
+  async getPSData(userId: string): Promise<any> {
     const student = await this.repository.findByUserId(userId);
     if (!student) {
       throw ApiError.notFound('Student profile not found');
@@ -107,7 +151,7 @@ export class PSService implements IPSService {
     return student;
   }
 
-  async disconnectPS(userId: string): Promise<StudentProfile> {
+  async disconnectPS(userId: string): Promise<any> {
     const student = await this.repository.findByUserId(userId);
     if (!student) {
       throw ApiError.notFound('Student profile not found');

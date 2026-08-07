@@ -12,14 +12,7 @@ export class PSController {
       throw ApiError.badRequest('X-PS-Session header is required');
     }
 
-    await psService.connectPS(req.user!.id, cookie);
-    return ApiResponse.success(res, null, PS_MESSAGES.CONNECT_SUCCESS);
-  });
-
-  static getPSData = asyncHandler(async (req: Request, res: Response) => {
-    const student = await psService.getPSData(req.user!.id);
-    
-    // Return only requested PS data properties
+    const student = await psService.connectPS(req.user!.id, cookie);
     const psData = {
       activityPoints: student.activityPoints ?? 0,
       opportunityPoints: student.opportunityPoints ?? 0,
@@ -27,6 +20,23 @@ export class PSController {
       levelClearance: student.levelClearance ?? null,
       lastSynced: student.lastSynced ?? null,
       psConnected: student.psConnected,
+      courses: student.psCourses || [],
+    };
+
+    return ApiResponse.success(res, psData, PS_MESSAGES.CONNECT_SUCCESS);
+  });
+
+  static getPSData = asyncHandler(async (req: Request, res: Response) => {
+    const student = await psService.getPSData(req.user!.id);
+    
+    const psData = {
+      activityPoints: student.activityPoints ?? 0,
+      opportunityPoints: student.opportunityPoints ?? 0,
+      responsiveScore: student.responsiveScore ?? 0,
+      levelClearance: student.levelClearance ?? null,
+      lastSynced: student.lastSynced ?? null,
+      psConnected: student.psConnected,
+      courses: student.psCourses || [],
     };
 
     return ApiResponse.success(res, psData, 'PS data fetched successfully');

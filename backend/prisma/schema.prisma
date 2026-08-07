@@ -104,8 +104,29 @@ model StudentProfile {
   portfolios     Portfolio[]
   applications   Application[]
   documents      Document[]
+  psCourses      StudentPSCourse[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+}
+
+model StudentPSCourse {
+  id                 String         @id @default(uuid())
+  studentId          String
+  student            StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId           String
+  courseName         String
+  category           String
+  imageUrl           String?
+  completedLevels    Int
+  totalLevels        Int
+  progressPercentage Float
+  status             String
+  lastSynced         DateTime       @default(now())
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@unique([studentId, courseId])
+  @@index([studentId])
 }
 
 model PlacementOfficerProfile {

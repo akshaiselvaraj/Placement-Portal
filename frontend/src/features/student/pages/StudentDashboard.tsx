@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import type { Column } from '@/components/common';
 import { Briefcase, GraduationCap, Calendar, Clock, CheckCircle2, ChevronRight, XCircle } from 'lucide-react';
 import type { Application } from '@/types';
-import { PSCard } from '@/features/ps';
+import { PSCard, PSCoursesCard } from '@/features/ps';
 
 export function StudentDashboard() {
   const { student, isLoading, isError } = useStudentProfile();
@@ -301,6 +301,8 @@ export function StudentDashboard() {
         </div>
       </div>
       </div>
+
+      <PSCoursesCard />
     </div>
   );
 }

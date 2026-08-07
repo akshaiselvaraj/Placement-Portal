@@ -4,9 +4,16 @@ import { IPSRepository } from './ps.interfaces';
 import { ConnectPSDto } from './ps.dto';
 
 export class PSRepository implements IPSRepository {
-  async findByUserId(userId: string): Promise<StudentProfile | null> {
+  async findByUserId(userId: string): Promise<any> {
     return prisma.studentProfile.findUnique({
       where: { userId },
+      include: {
+        psCourses: {
+          orderBy: {
+            progressPercentage: 'desc',
+          },
+        },
+      },
     });
   }
 
@@ -30,6 +37,55 @@ export class PSRepository implements IPSRepository {
       data: {
         psConnected: false,
       },
+    });
+  }
+
+  async syncPSCourses(studentId: string, courses: any[]): Promise<void> {
+    const courseIdsToKeep = courses.map(c => String(c.courseId));
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete orphaned courses
+      await tx.studentPSCourse.deleteMany({
+        where: {
+          studentId,
+          courseId: {
+            notIn: courseIdsToKeep,
+          },
+        },
+      });
+
+      // 2. Upsert courses
+      for (const course of courses) {
+        await tx.studentPSCourse.upsert({
+          where: {
+            studentId_courseId: {
+              studentId,
+              courseId: String(course.courseId),
+            },
+          },
+          update: {
+            courseName: course.courseName,
+            category: course.category,
+            imageUrl: course.imageUrl,
+            completedLevels: course.completedLevels,
+            totalLevels: course.totalLevels,
+            progressPercentage: course.progressPercentage,
+            status: course.status,
+            lastSynced: new Date(),
+          },
+          create: {
+            studentId,
+            courseId: String(course.courseId),
+            courseName: course.courseName,
+            category: course.category,
+            imageUrl: course.imageUrl,
+            completedLevels: course.completedLevels,
+            totalLevels: course.totalLevels,
+            progressPercentage: course.progressPercentage,
+            status: course.status,
+          },
+        });
+      }
     });
   }
 }

@@ -170,16 +170,14 @@ export function PSCard() {
 
         {/* Footer Actions */}
         <div className="flex flex-col gap-2 pt-2">
-          {!psData.psPushed && (
-            <button
-              onClick={() => pushPSData()}
-              disabled={isPushing}
-              className="w-full py-2.5 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-all cursor-pointer text-center shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
-            >
-              {isPushing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              Push to Placement Officer
-            </button>
-          )}
+          <button
+            onClick={() => pushPSData()}
+            disabled={isPushing}
+            className="w-full py-2.5 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-all cursor-pointer text-center shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
+          >
+            {isPushing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            {psData.psPushed ? 'Push Updates to PO' : 'Push to Placement Officer'}
+          </button>
 
           <div className="flex gap-3">
             <button

@@ -42,3 +42,19 @@ export function useDisconnectPS() {
     },
   });
 }
+
+export function usePushPSData() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: psApi.pushPSData,
+    onSuccess: () => {
+      toast.success('PS details shared with Placement Officer successfully');
+      queryClient.invalidateQueries({ queryKey: ['ps-data'] });
+      queryClient.invalidateQueries({ queryKey: ['student-profile'] });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to share PS details');
+    },
+  });
+}

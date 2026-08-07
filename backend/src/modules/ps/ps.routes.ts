@@ -10,6 +10,9 @@ router.post('/connect', authenticate, authorize('STUDENT'), PSController.connect
 // Sync account data manually
 router.post('/sync', authenticate, authorize('STUDENT'), PSController.connectPS);
 
+// Push account data to Placement Officer
+router.post('/push', authenticate, authorize('STUDENT'), PSController.pushToPO);
+
 // Get current logged-in user's PS details
 router.get('/me', authenticate, authorize('STUDENT'), PSController.getPSData);
 

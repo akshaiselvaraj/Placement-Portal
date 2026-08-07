@@ -52,6 +52,9 @@ export function RecruiterJobsPage() {
     requirements: '',
     minCgpa: null,
     minActivityPoints: 0,
+    minPsLevel: 'None',
+    min10thMarks: null,
+    min12thMarks: null,
   });
 
   const openCreateModal = () => {
@@ -71,6 +74,9 @@ export function RecruiterJobsPage() {
       requirements: '',
       minCgpa: null,
       minActivityPoints: 0,
+      minPsLevel: 'None',
+      min10thMarks: null,
+      min12thMarks: null,
     });
     setShowModal(true);
   };
@@ -92,6 +98,9 @@ export function RecruiterJobsPage() {
       requirements: job.requirements || '',
       minCgpa: job.minCgpa,
       minActivityPoints: job.minActivityPoints ?? 0,
+      minPsLevel: job.minPsLevel || 'None',
+      min10thMarks: job.min10thMarks ?? null,
+      min12thMarks: job.min12thMarks ?? null,
     });
     setShowModal(true);
   };
@@ -104,6 +113,8 @@ export function RecruiterJobsPage() {
       salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
       minCgpa: form.minCgpa ? Number(form.minCgpa) : null,
       minActivityPoints: form.minActivityPoints ? parseInt(String(form.minActivityPoints), 10) : 0,
+      min10thMarks: form.min10thMarks ? Number(form.min10thMarks) : null,
+      min12thMarks: form.min12thMarks ? Number(form.min12thMarks) : null,
     };
     const cId = company?.id || form.companyId;
     if (cId) {
@@ -466,6 +477,54 @@ export function RecruiterJobsPage() {
                       value={form.minActivityPoints ?? ''}
                       onChange={(e) => setForm({ ...form, minActivityPoints: e.target.value ? parseInt(e.target.value, 10) : 0 })}
                       placeholder="e.g. 100"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] mb-1.5 uppercase tracking-wide">
+                      Min PS Level
+                    </label>
+                    <select
+                      value={form.minPsLevel ?? 'None'}
+                      onChange={(e) => setForm({ ...form, minPsLevel: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                    >
+                      <option value="None">None</option>
+                      <option value="Level 1">Level 1</option>
+                      <option value="Level 2">Level 2</option>
+                      <option value="Level 3">Level 3</option>
+                      <option value="Level 4">Level 4</option>
+                      <option value="Level 5">Level 5</option>
+                      <option value="Level 6">Level 6</option>
+                      <option value="Level 7">Level 7</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] mb-1.5 uppercase tracking-wide">
+                      Min 10th Marks (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={form.min10thMarks ?? ''}
+                      onChange={(e) => setForm({ ...form, min10thMarks: e.target.value ? Number(e.target.value) : null })}
+                      placeholder="e.g. 80.0"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[hsl(var(--text-secondary))] mb-1.5 uppercase tracking-wide">
+                      Min 12th Marks (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={form.min12thMarks ?? ''}
+                      onChange={(e) => setForm({ ...form, min12thMarks: e.target.value ? Number(e.target.value) : null })}
+                      placeholder="e.g. 80.0"
                       className="w-full px-4 py-2.5 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                     />
                   </div>

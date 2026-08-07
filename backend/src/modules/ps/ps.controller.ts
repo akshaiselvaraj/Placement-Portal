@@ -20,10 +20,27 @@ export class PSController {
       levelClearance: student.levelClearance ?? null,
       lastSynced: student.lastSynced ?? null,
       psConnected: student.psConnected,
+      psPushed: student.psPushed,
       courses: student.psCourses || [],
     };
 
     return ApiResponse.success(res, psData, PS_MESSAGES.CONNECT_SUCCESS);
+  });
+
+  static pushToPO = asyncHandler(async (req: Request, res: Response) => {
+    const student = await psService.pushToPO(req.user!.id);
+    const psData = {
+      activityPoints: student.activityPoints ?? 0,
+      opportunityPoints: student.opportunityPoints ?? 0,
+      responsiveScore: student.responsiveScore ?? 0,
+      levelClearance: student.levelClearance ?? null,
+      lastSynced: student.lastSynced ?? null,
+      psConnected: student.psConnected,
+      psPushed: student.psPushed,
+      courses: student.psCourses || [],
+    };
+
+    return ApiResponse.success(res, psData, 'PS details shared with Placement Officer successfully');
   });
 
   static getPSData = asyncHandler(async (req: Request, res: Response) => {
@@ -36,6 +53,7 @@ export class PSController {
       levelClearance: student.levelClearance ?? null,
       lastSynced: student.lastSynced ?? null,
       psConnected: student.psConnected,
+      psPushed: student.psPushed,
       courses: student.psCourses || [],
     };
 

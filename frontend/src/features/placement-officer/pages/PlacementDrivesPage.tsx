@@ -53,6 +53,9 @@ export function PlacementDrivesPage() {
     bondDetails: '',
     requiredDocuments: 'Resume, Mark Sheets',
     minActivityPoints: '0',
+    minPsLevel: 'None',
+    min10thMarks: '0',
+    min12thMarks: '0',
   });
 
   // Queries
@@ -150,6 +153,9 @@ export function PlacementDrivesPage() {
       bondDetails: '',
       requiredDocuments: 'Resume, Mark Sheets',
       minActivityPoints: '0',
+      minPsLevel: 'None',
+      min10thMarks: '0',
+      min12thMarks: '0',
     });
     setEditingDrive(null);
     setIsCreateModalOpen(true);
@@ -177,6 +183,9 @@ export function PlacementDrivesPage() {
       bondDetails: drive.bondDetails || '',
       requiredDocuments: drive.requiredDocuments?.join(', ') || '',
       minActivityPoints: String(drive.minActivityPoints || '0'),
+      minPsLevel: drive.minPsLevel || 'None',
+      min10thMarks: String(drive.min10thMarks || '0'),
+      min12thMarks: String(drive.min12thMarks || '0'),
     });
     setIsCreateModalOpen(true);
   };
@@ -419,7 +428,7 @@ export function PlacementDrivesPage() {
               Eligibility Analysis Engine
             </h3>
             <p className="text-xs text-[hsl(var(--text-secondary))] mb-6">
-              Checking platform students against drive rules (Min CGPA: {viewingEligibilityDrive.minCgpa}, Backlogs: {viewingEligibilityDrive.maxBacklogs}, Min Activity Points: {viewingEligibilityDrive.minActivityPoints ?? 0}, Departments: {viewingEligibilityDrive.departmentsEligible?.join(', ')}).
+              Checking platform students against drive rules (Min CGPA: {viewingEligibilityDrive.minCgpa}, Backlogs: {viewingEligibilityDrive.maxBacklogs}, Min Activity Points: {viewingEligibilityDrive.minActivityPoints ?? 0}, Min PS Level: {viewingEligibilityDrive.minPsLevel || 'None'}, Min 10th: {viewingEligibilityDrive.min10thMarks || 0}%, Min 12th: {viewingEligibilityDrive.min12thMarks || 0}%, Departments: {viewingEligibilityDrive.departmentsEligible?.join(', ')}).
             </p>
 
             {isLoadingEligibility ? (
@@ -440,7 +449,7 @@ export function PlacementDrivesPage() {
                           <p className="text-[10px] text-[hsl(var(--text-secondary))]">{s.rollNumber} &bull; {s.department}</p>
                         </div>
                         <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">
-                          CGPA: {s.cgpa}
+                          CGPA: {s.cgpa} {s.psLevel && s.psLevel !== 'None' ? `• PS: ${s.psLevel}` : ''}
                         </span>
                       </div>
                     ))}
@@ -642,6 +651,55 @@ export function PlacementDrivesPage() {
                     type="number"
                     value={formData.openings}
                     onChange={(e) => setFormData((p) => ({ ...p, openings: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                  />
+                </div>
+              </div>
+
+              {/* Extra PS and Board marks criteria */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Min PS Level
+                  </label>
+                  <select
+                    value={formData.minPsLevel}
+                    onChange={(e) => setFormData((p) => ({ ...p, minPsLevel: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                  >
+                    <option value="None">None</option>
+                    <option value="Level 1">Level 1</option>
+                    <option value="Level 2">Level 2</option>
+                    <option value="Level 3">Level 3</option>
+                    <option value="Level 4">Level 4</option>
+                    <option value="Level 5">Level 5</option>
+                    <option value="Level 6">Level 6</option>
+                    <option value="Level 7">Level 7</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Min 10th Marks (%)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={formData.min10thMarks}
+                    onChange={(e) => setFormData((p) => ({ ...p, min10thMarks: e.target.value }))}
+                    className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[hsl(var(--text-secondary))] uppercase mb-1.5">
+                    Min 12th Marks (%)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={formData.min12thMarks}
+                    onChange={(e) => setFormData((p) => ({ ...p, min12thMarks: e.target.value }))}
                     className="block w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] py-2 px-3 text-sm text-[hsl(var(--text-primary))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
                   />
                 </div>

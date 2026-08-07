@@ -12,6 +12,11 @@ export const psApi = {
     return res.data.data;
   },
 
+  pushPSData: async (): Promise<PSStatusData> => {
+    const res = await api.post<ApiResponse<PSStatusData>>('/ps/push');
+    return res.data.data;
+  },
+
   disconnectPS: async (): Promise<void> => {
     await api.post<ApiResponse<null>>('/ps/disconnect');
   },

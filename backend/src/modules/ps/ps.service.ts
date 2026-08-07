@@ -161,6 +161,15 @@ export class PSService implements IPSService {
     return student;
   }
 
+  async pushToPO(userId: string): Promise<any> {
+    const student = await this.repository.findByUserId(userId);
+    if (!student) {
+      throw ApiError.notFound('Student profile not found');
+    }
+    await this.repository.sharePSData(userId, true);
+    return this.repository.findByUserId(userId);
+  }
+
   async disconnectPS(userId: string): Promise<any> {
     const student = await this.repository.findByUserId(userId);
     if (!student) {

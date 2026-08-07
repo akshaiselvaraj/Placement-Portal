@@ -93,9 +93,15 @@ export function StudentsManagement() {
                     </div>
                     <StatusBadge status={student.profileStatus} />
                   </div>
-                  <div className="flex gap-4 mt-3 text-xs text-[hsl(var(--text-secondary))] font-medium">
+                  <div className="flex gap-4 mt-3 text-xs text-[hsl(var(--text-secondary))] font-medium flex-wrap">
                     <span>{student.department}</span>
                     <span>CGPA: {student.cgpa !== null ? student.cgpa.toFixed(2) : 'N/A'}</span>
+                    {student.activityPoints !== undefined && (
+                      <span>Activity: {student.activityPoints ?? 0}</span>
+                    )}
+                    {student.levelClearance && student.levelClearance !== 'None' && (
+                      <span>PS: {student.levelClearance}</span>
+                    )}
                   </div>
                 </button>
               ))}
@@ -156,6 +162,18 @@ export function StudentsManagement() {
                       <span>Current CGPA</span>
                       <span className="text-[hsl(var(--text-primary))] font-bold">
                         {selectedStudent.cgpa !== null ? selectedStudent.cgpa.toFixed(2) : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Activity Points</span>
+                      <span className="text-[hsl(var(--text-primary))] font-bold">
+                        {selectedStudent.activityPoints ?? 0}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>PS Clearance Level</span>
+                      <span className="text-[hsl(var(--text-primary))] font-bold">
+                        {selectedStudent.levelClearance || 'None'}
                       </span>
                     </div>
                     <div className="flex justify-between">

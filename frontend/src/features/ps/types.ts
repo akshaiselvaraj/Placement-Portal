@@ -25,5 +25,6 @@ export interface PSStatusData {
   levelClearance: string | null;
   lastSynced: string | null;
   psConnected: boolean;
+  psPushed: boolean;
   courses: PSCourse[];
 }

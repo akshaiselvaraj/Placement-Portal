@@ -12,10 +12,8 @@ import {
   HelpCircle,
   Clock,
   Sparkles,
-  ChevronRight,
   Send,
   Trash2,
-  Edit3,
   X,
   AlertCircle,
 } from 'lucide-react';
@@ -32,7 +30,6 @@ export function AttendedCompaniesPage() {
   const [difficulty, setDifficulty] = useState<InterviewQuestion['difficulty']>('MEDIUM');
   const [topic, setTopic] = useState('');
   const [answer, setAnswer] = useState('');
-  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
 
   // Query: Attended Companies
   const { data: attendedCompanies = [], isLoading } = useQuery({
@@ -72,7 +69,6 @@ export function AttendedCompaniesPage() {
     setDifficulty('MEDIUM');
     setTopic('');
     setAnswer('');
-    setEditingQuestionId(null);
   };
 
   const handleOpenQuestionsModal = (app: AttendedCompany, round: StudentRound) => {

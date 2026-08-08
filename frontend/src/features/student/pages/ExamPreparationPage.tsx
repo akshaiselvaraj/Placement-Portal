@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { interviewService, type InterviewQuestion } from '@/services/interview.service';
 import { LoadingSkeleton, EmptyState } from '@/components/common';
@@ -6,16 +6,11 @@ import {
   BookOpen,
   Search,
   Building2,
-  Filter,
   Eye,
   EyeOff,
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  Layers,
-  CheckCircle2,
-  Bookmark,
-  Award,
 } from 'lucide-react';
 
 export function ExamPreparationPage() {

@@ -15,6 +15,9 @@ export interface CreateJobPayload {
   requirements?: string | null;
   minCgpa?: number | null;
   minActivityPoints?: number | null;
+  minPsLevel?: string | null;
+  min10thMarks?: number | null;
+  min12thMarks?: number | null;
 }
 
 export interface EligibilityResult {
@@ -25,6 +28,12 @@ export interface EligibilityResult {
   requiredActivityPoints?: number;
   profileVerified: boolean;
   atsScore?: number;
+  studentPsLevel?: string | null;
+  requiredPsLevel?: string | null;
+  student10thMarks?: number | null;
+  required10thMarks?: number | null;
+  student12thMarks?: number | null;
+  required12thMarks?: number | null;
   atsBreakdown?: {
     score: number;
     weights: {
@@ -50,6 +59,9 @@ export interface EligibilityResult {
       gradYearEligible: boolean;
       cgpaEligible: boolean;
       activityPointsEligible: boolean;
+      psLevelEligible?: boolean;
+      tenthMarksEligible?: boolean;
+      twelfthMarksEligible?: boolean;
     };
     explanations: string[];
     aiPlagiarismScore?: number;

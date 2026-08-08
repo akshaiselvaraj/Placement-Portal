@@ -8,11 +8,6 @@ import {
   Search,
   Lock,
   Unlock,
-  CheckCircle2,
-  Clock,
-  User,
-  Building2,
-  AlertTriangle,
   X,
 } from 'lucide-react';
 

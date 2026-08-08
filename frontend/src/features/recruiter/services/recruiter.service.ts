@@ -35,7 +35,15 @@ export interface AtsBreakdown {
   scores: { skillsScore: number; educationScore: number; cgpaScore: number; experienceScore: number; certificationsScore: number; projectsScore: number };
   matchedSkills: string[];
   missingSkills: string[];
-  eligibility: { departmentEligible: boolean; gradYearEligible: boolean; cgpaEligible: boolean; activityPointsEligible: boolean };
+  eligibility: {
+    departmentEligible: boolean;
+    gradYearEligible: boolean;
+    cgpaEligible: boolean;
+    activityPointsEligible: boolean;
+    psLevelEligible?: boolean;
+    tenthMarksEligible?: boolean;
+    twelfthMarksEligible?: boolean;
+  };
   explanations: string[];
 }
 

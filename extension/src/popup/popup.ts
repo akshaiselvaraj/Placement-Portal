@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const url = activeTab.url;
-      const isPortal = url.includes('localhost:5173') || url.includes('placement.bitsathy.ac.in');
+      const isPortal = url.includes('localhost:5173') || url.includes('placement.bitsathy.ac.in') || url.includes('placement-portal-cyan.vercel.app');
 
       if (!isPortal) {
         showMessage(

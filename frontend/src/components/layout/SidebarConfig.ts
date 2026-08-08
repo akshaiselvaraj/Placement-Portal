@@ -16,6 +16,9 @@ import {
   TrendingUp,
   Shield,
   Award,
+  BookOpen,
+  ShieldCheck,
+  HelpCircle,
 } from 'lucide-react';
 import type { RoleType } from '@/lib/constants';
 
@@ -40,6 +43,8 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
     { title: 'Placement Drives', href: '/placement/drives', icon: Calendar },
     { title: 'Companies', href: '/placement/companies', icon: Building2 },
     { title: 'Applications', href: '/placement/applications', icon: ClipboardList },
+    { title: 'Interview Round Access', href: '/placement/interview-rounds', icon: ShieldCheck },
+    { title: 'Interview Question Review', href: '/placement/interview-questions', icon: HelpCircle },
     { title: 'Approvals Desk', href: '/placement/approvals', icon: UserCheck },
     { title: 'Scheduler', href: '/placement/scheduler', icon: UserCheck },
     { title: 'Publish Results', href: '/placement/results', icon: Layers },
@@ -48,11 +53,13 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
   STUDENT: [
     { title: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
     { title: 'Profile', href: '/student/profile', icon: Users },
+    { title: 'My Applications', href: '/student/applications', icon: ClipboardList },
+    { title: 'Attended Companies', href: '/student/attended-companies', icon: Building2 },
+    { title: 'Exam Preparation', href: '/student/exam-preparation', icon: BookOpen },
+    { title: 'Browse Jobs', href: '/student/jobs', icon: Briefcase },
     { title: 'Resume Builder', href: '/student/resumes', icon: FileText },
     { title: 'Portfolio Generator', href: '/student/portfolio', icon: FolderHeart },
-    { title: 'Browse Jobs', href: '/student/jobs', icon: Briefcase },
     { title: 'ATS Checker', href: '/student/ats-check', icon: Award },
-    { title: 'My Applications', href: '/student/applications', icon: ClipboardList },
   ],
   RECRUITER: [
     { title: 'Dashboard', href: '/recruiter/dashboard', icon: LayoutDashboard },

@@ -57,6 +57,39 @@ enum NotificationType {
   ACTION
 }
 
+enum StudentRoundStatus {
+  NOT_STARTED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  PASSED
+  FAILED
+}
+
+enum QuestionStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum QuestionType {
+  TECHNICAL
+  PROGRAMMING
+  APTITUDE
+  LOGICAL_REASONING
+  SCENARIO_BASED
+  HR
+  BEHAVIORAL
+  OTHER
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
 model User {
   id                      String                   @id @default(uuid())
   email                   String                   @unique
@@ -72,6 +105,8 @@ model User {
   placementOfficerProfile PlacementOfficerProfile?
   adminProfile            Admin?
   notifications           Notification[]
+  grantedRoundAccesses    RoundAccess[]
+  reviewedQuestions       InterviewQuestion[]
 }
 
 model StudentProfile {
@@ -106,6 +141,9 @@ model StudentProfile {
   applications   Application[]
   documents      Document[]
   psCourses      StudentPSCourse[]
+  studentRounds  StudentRound[]
+  roundAccesses  RoundAccess[]
+  interviewQuestions InterviewQuestion[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
@@ -180,6 +218,7 @@ model Company {
   recruiterProfiles RecruiterProfile[]
   jobs              Job[]
   placementDrives   PlacementDrive[]
+  interviewRounds   InterviewRound[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 }
@@ -248,6 +287,7 @@ model PlacementDrive {
   requiredDocuments   String[]        @default([])
 
   interviews          Interview[]
+  interviewRounds     InterviewRound[]
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
 }
@@ -268,6 +308,7 @@ model Application {
   updatedAt     DateTime                   @updatedAt
   interviews    Interview[]
   statusHistory ApplicationStatusHistory[]
+  studentRounds StudentRound[]
 
   // Extended offer details
   ctc           Float?                     @default(0)
@@ -502,6 +543,84 @@ model ApprovalHistory {
   version     Int       @default(1)
 
   @@map("approval_histories")
+}
+
+model InterviewRound {
+  id               String          @id @default(uuid())
+  placementDriveId String?
+  placementDrive   PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: Cascade)
+  companyId        String?
+  company          Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name             String
+  roundOrder       Int             @default(1)
+  description      String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  studentRounds    StudentRound[]
+}
+
+model StudentRound {
+  id               String             @id @default(uuid())
+  studentId        String
+  student          StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  applicationId    String
+  application      Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  interviewRoundId String
+  interviewRound   InterviewRound     @relation(fields: [interviewRoundId], references: [id], onDelete: Cascade)
+  status           StudentRoundStatus @default(NOT_STARTED)
+  completedAt      DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  roundAccess      RoundAccess?
+  questions        InterviewQuestion[]
+
+  @@unique([studentId, applicationId, interviewRoundId])
+  @@index([studentId])
+  @@index([applicationId])
+}
+
+model RoundAccess {
+  id             String       @id @default(uuid())
+  studentRoundId String       @unique
+  studentRound   StudentRound @relation(fields: [studentRoundId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  grantedById    String
+  grantedBy      User         @relation(fields: [grantedById], references: [id])
+  isUnlocked     Boolean      @default(true)
+  grantedAt      DateTime     @default(now())
+  revokedAt      DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([studentId])
+}
+
+model InterviewQuestion {
+  id              String             @id @default(uuid())
+  studentId       String
+  student         StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentRoundId  String
+  studentRound    StudentRound       @relation(fields: [studentRoundId], references: [id], onDelete: Cascade)
+  question        String
+  questionType    QuestionType       @default(TECHNICAL)
+  difficulty      QuestionDifficulty @default(MEDIUM)
+  topic           String?
+  answer          String?
+  status          QuestionStatus     @default(PENDING_REVIEW)
+  rejectionReason String?
+  reviewedById    String?
+  reviewedBy      User?              @relation(fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([studentId])
+  @@index([studentRoundId])
+  @@index([status])
 }
 
 

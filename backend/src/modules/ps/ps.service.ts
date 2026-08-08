@@ -166,6 +166,9 @@ export class PSService implements IPSService {
     if (!student) {
       throw ApiError.notFound('Student profile not found');
     }
+    if (!student.psConnected) {
+      throw ApiError.badRequest('Please connect your Personalized Skill (PS) account before sharing with Placement Officer');
+    }
     await this.repository.sharePSData(userId, true);
     return this.repository.findByUserId(userId);
   }

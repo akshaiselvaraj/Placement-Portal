@@ -1,6 +1,8 @@
 export { StudentDashboard } from './pages/StudentDashboard';
 export { ProfilePage } from './pages/ProfilePage';
 export { AtsCheckPage } from './pages/AtsCheckPage';
+export { AttendedCompaniesPage } from './pages/AttendedCompaniesPage';
+export { ExamPreparationPage } from './pages/ExamPreparationPage';
 export { useStudentProfile } from './hooks/useStudentProfile';
 export { studentService } from './services/student.service';
 export { default } from './services/student.service';

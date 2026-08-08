@@ -37,6 +37,15 @@ export class StudentService {
                 company: true,
               },
             },
+            interviews: {
+              include: {
+                drive: {
+                  include: {
+                    company: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

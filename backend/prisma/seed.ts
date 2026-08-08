@@ -691,6 +691,163 @@ async function main() {
     },
   });
 
+  // 8. Seed Interview Rounds, Student Rounds, RoundAccess & InterviewQuestions
+  console.log('Seeding interview rounds and access controls...');
+
+  // Create InterviewRounds for Google
+  const googleRound1 = await prisma.interviewRound.create({
+    data: {
+      name: 'Round 1 - Online Assessment & Aptitude',
+      roundOrder: 1,
+      description: 'Dyna-programming, Data Structures, and Quantitative Aptitude.',
+      companyId: googleCompany.id,
+      placementDriveId: googleDrive.id,
+    },
+  });
+
+  const googleRound2 = await prisma.interviewRound.create({
+    data: {
+      name: 'Round 2 - Technical Interview (DSA & System Design)',
+      roundOrder: 2,
+      description: 'Live coding on whiteboard, algorithms, and scalability.',
+      companyId: googleCompany.id,
+      placementDriveId: googleDrive.id,
+    },
+  });
+
+  const googleRound3 = await prisma.interviewRound.create({
+    data: {
+      name: 'Round 3 - HR & Googliness Interview',
+      roundOrder: 3,
+      description: 'Behavioral assessment, cultural fit, and leadership principles.',
+      companyId: googleCompany.id,
+      placementDriveId: googleDrive.id,
+    },
+  });
+
+  // Get officer user for granting access
+  const officerUser = await prisma.user.findFirst({
+    where: { role: Role.PLACEMENT_OFFICER },
+  });
+
+  // Priya Google StudentRounds & Access
+  const priyaRound1 = await prisma.studentRound.create({
+    data: {
+      studentId: priyaProfile.id,
+      applicationId: priyaGoogleApp.id,
+      interviewRoundId: googleRound1.id,
+      status: 'COMPLETED',
+      completedAt: new Date('2026-07-15'),
+    },
+  });
+
+  const priyaRound2 = await prisma.studentRound.create({
+    data: {
+      studentId: priyaProfile.id,
+      applicationId: priyaGoogleApp.id,
+      interviewRoundId: googleRound2.id,
+      status: 'COMPLETED',
+      completedAt: new Date('2026-07-20'),
+    },
+  });
+
+  if (officerUser) {
+    await prisma.roundAccess.create({
+      data: {
+        studentRoundId: priyaRound1.id,
+        studentId: priyaProfile.id,
+        grantedById: officerUser.id,
+        isUnlocked: true,
+      },
+    });
+
+    await prisma.roundAccess.create({
+      data: {
+        studentRoundId: priyaRound2.id,
+        studentId: priyaProfile.id,
+        grantedById: officerUser.id,
+        isUnlocked: true,
+      },
+    });
+  }
+
+  // Seed Approved Questions for Exam Preparation
+  await prisma.interviewQuestion.createMany({
+    data: [
+      {
+        studentId: priyaProfile.id,
+        studentRoundId: priyaRound1.id,
+        question: 'Explain the difference between TCP and UDP with real-world protocol examples.',
+        questionType: 'TECHNICAL',
+        difficulty: 'EASY',
+        topic: 'Computer Networks',
+        answer: 'TCP is connection-oriented, reliable, and uses 3-way handshake (e.g. HTTP/HTTPS). UDP is connectionless, fast, but unreliable (e.g. DNS, Video Streaming).',
+        status: 'APPROVED',
+        reviewedById: officerUser?.id,
+        reviewedAt: new Date(),
+      },
+      {
+        studentId: priyaProfile.id,
+        studentRoundId: priyaRound2.id,
+        question: 'How do you detect a cycle in a Directed Graph? Implement Tarjan or Kahn algorithm approach.',
+        questionType: 'PROGRAMMING',
+        difficulty: 'HARD',
+        topic: 'Data Structures & Algorithms',
+        answer: 'Using DFS with 3 states (UNVISITED, VISITING, VISITED). If a neighbor in VISITING state is encountered during DFS, a back-edge exists indicating a cycle.',
+        status: 'APPROVED',
+        reviewedById: officerUser?.id,
+        reviewedAt: new Date(),
+      },
+      {
+        studentId: priyaProfile.id,
+        studentRoundId: priyaRound1.id,
+        question: 'What is ACID compliance in Relational Databases and how does Isolation Level affect concurrency?',
+        questionType: 'TECHNICAL',
+        difficulty: 'MEDIUM',
+        topic: 'Databases / SQL',
+        answer: 'ACID stands for Atomicity, Consistency, Isolation, Durability. Isolation levels (Read Uncommitted, Read Committed, Repeatable Read, Serializable) prevent dirty reads, non-repeatable reads, and phantom reads.',
+        status: 'APPROVED',
+        reviewedById: officerUser?.id,
+        reviewedAt: new Date(),
+      },
+    ],
+  });
+
+  // Alex Google StudentRounds & Pending Question for Review
+  const alexRound1 = await prisma.studentRound.create({
+    data: {
+      studentId: alexProfile.id,
+      applicationId: alexGoogleApp.id,
+      interviewRoundId: googleRound1.id,
+      status: 'COMPLETED',
+      completedAt: new Date('2026-07-25'),
+    },
+  });
+
+  if (officerUser) {
+    await prisma.roundAccess.create({
+      data: {
+        studentRoundId: alexRound1.id,
+        studentId: alexProfile.id,
+        grantedById: officerUser.id,
+        isUnlocked: true,
+      },
+    });
+  }
+
+  await prisma.interviewQuestion.create({
+    data: {
+      studentId: alexProfile.id,
+      studentRoundId: alexRound1.id,
+      question: 'What is DNS resolution order and how does local OS DNS cache interact with recursive resolvers?',
+      questionType: 'TECHNICAL',
+      difficulty: 'MEDIUM',
+      topic: 'Networking',
+      answer: 'Check local browser cache -> OS hosts file -> Local DNS resolver -> Root Nameserver -> TLD Nameserver -> Authoritative Nameserver.',
+      status: 'PENDING_REVIEW',
+    },
+  });
+
   console.log('Database seeding completed successfully!');
 }
 

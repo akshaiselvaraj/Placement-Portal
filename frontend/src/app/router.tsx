@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { RoleRedirect, ProtectedRoute } from '@/routes';
 import { LoginPage, RegisterPage } from '@/features/auth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { StudentDashboard, ProfilePage, AtsCheckPage } from '@/features/student';
+import { StudentDashboard, ProfilePage, AtsCheckPage, AttendedCompaniesPage, ExamPreparationPage } from '@/features/student';
 import {
   PlacementDashboard,
   StudentsManagement,
@@ -13,6 +13,8 @@ import {
   ApplicationsPage,
   InterviewsPage as PlacementInterviewsPage,
   ResultsManagementPage,
+  InterviewRoundManagementPage,
+  InterviewQuestionReviewPage,
 } from '@/features/placement-officer';
 import { AdminDashboard, UsersManagement, CompaniesManagement, AdminsManagement, SystemSettings, SystemLogs } from '@/features/admin';
 import { ResumesPage, ResumeWorkspace, ResumePreviewPage } from '@/features/resume-builder';
@@ -190,6 +192,38 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/placement/interview-rounds',
+        element: (
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
+            <InterviewRoundManagementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/placement-officer/interview-rounds',
+        element: (
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
+            <InterviewRoundManagementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/placement/interview-questions',
+        element: (
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
+            <InterviewQuestionReviewPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/placement-officer/interview-questions',
+        element: (
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
+            <InterviewQuestionReviewPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/placement/results',
         element: (
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
@@ -211,6 +245,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <StudentDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/student/attended-companies',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <AttendedCompaniesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/student/exam-preparation',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <ExamPreparationPage />
           </ProtectedRoute>
         ),
       },

@@ -15,6 +15,7 @@ import { notificationRoutes } from './modules/notification';
 import { jobRoutes } from './modules/job';
 import { analyticsRoutes } from './modules/analytics';
 import { psRoutes } from './modules/ps';
+import { studentInterviewRouter, placementInterviewRouter } from './modules/interview-round';
 
 const app = express();
 
@@ -49,8 +50,10 @@ app.get('/api/health', (_req, res) => {
 // API Routes (will be added in subsequent phases)
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/students', studentInterviewRouter);
 app.use('/api/recruiters', recruiterRoutes);
 app.use('/api/placement', placementRoutes);
+app.use('/api/placement', placementInterviewRouter);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admins', adminManageRoutes);
 app.use('/api/jobs', jobRoutes);
@@ -68,7 +71,7 @@ app.use(errorHandler);
 const PORT = env.PORT;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT} in ${env.NODE_ENV} mode`);
+  console.log(`🚀 Placement Portal Server running on port ${PORT} in ${env.NODE_ENV} mode`);
   console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
 });
 

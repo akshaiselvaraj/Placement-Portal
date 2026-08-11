@@ -13,7 +13,8 @@
     "https://ps.bitsathy.ac.in/*",
     "https://placement.bitsathy.ac.in/*",
     "http://localhost:5173/*",
-    "http://localhost:5000/*"
+    "http://localhost:5000/*",
+    "https://placement-portal-cyan.vercel.app/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -31,7 +32,8 @@
     {
       "matches": [
         "http://localhost:5173/*",
-        "https://placement.bitsathy.ac.in/*"
+        "https://placement.bitsathy.ac.in/*",
+        "https://placement-portal-cyan.vercel.app/*"
       ],
       "js": ["content.js"],
       "run_at": "document_start"

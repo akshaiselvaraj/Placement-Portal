@@ -61,12 +61,15 @@ export function ExamPreparationPage() {
       <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-background border border-primary/20 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-semibold">
-            <Sparkles className="h-3.5 w-3.5" /> VERIFIED INTERVIEW REPOSITORY
+            <Sparkles className="h-3.5 w-3.5" /> SHARED INTERVIEW REPOSITORY
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Exam Preparation</h1>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Master real company interview rounds using verified questions and solutions contributed by previous successful candidates.
+            Master real company interview rounds using questions and solutions contributed by previous candidates.
           </p>
+          <div className="inline-flex items-center gap-1.5 text-xs text-primary font-semibold bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-lg mt-2">
+            <span>Interview questions shared by students are available to all students for placement preparation.</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -93,7 +96,7 @@ export function ExamPreparationPage() {
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Building2 className="h-4 w-4 text-primary" />
-            Companies with Approved Interview Experiences
+            Companies with Shared Interview Experiences
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {companiesSummary.map((c: any) => (
@@ -116,7 +119,7 @@ export function ExamPreparationPage() {
                   )}
                   <div>
                     <h3 className="font-semibold text-foreground text-sm">{c.name}</h3>
-                    <p className="text-xs text-muted-foreground">{c.totalApprovedQuestions} Verified Questions</p>
+                    <p className="text-xs text-muted-foreground">{c.totalApprovedQuestions} Shared Questions</p>
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
@@ -196,8 +199,8 @@ export function ExamPreparationPage() {
       {questions.length === 0 ? (
         <EmptyState
           icon={BookOpen}
-          title="No approved interview questions found"
-          description="Approved questions will appear here once candidates submit their interview experiences and Placement Officers verify them."
+          title="No interview questions found"
+          description="Interview questions will appear here once candidates submit their interview experiences."
         />
       ) : isPracticeMode ? (
         /* PRACTICE MODE VIEW */
@@ -288,7 +291,7 @@ export function ExamPreparationPage() {
         /* LIST VIEW */
         <div className="space-y-4">
           <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-            <span>Showing {questions.length} verified questions</span>
+            <span>Showing {questions.length} shared questions</span>
           </div>
 
           <div className="grid grid-cols-1 gap-4">

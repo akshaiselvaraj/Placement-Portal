@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { InterviewRoundService } from './interview-round.service';
 import { ApiResponse } from '../../utils/api-response';
 import { asyncHandler } from '../../utils/async-handler';
+import { ApiError } from '../../utils/api-error';
 
 export class InterviewRoundController {
   // Student - Attended Companies
@@ -81,23 +82,16 @@ export class InterviewRoundController {
     return ApiResponse.success(res, data, 'Student round status updated successfully');
   });
 
-  // Placement Officer - Question Review
+  // Placement Officer - Question Review (DISABLED under auto-publication workflow)
   static getQuestionsForReview = asyncHandler(async (req: Request, res: Response) => {
-    const data = await InterviewRoundService.getQuestionsForReview({
-      status: req.query.status as any,
-      companyId: req.query.companyId as string,
-      search: req.query.search as string,
-    });
-    return ApiResponse.success(res, data, 'Questions for review fetched successfully');
+    throw ApiError.forbidden('Question moderation is disabled. All submitted questions are published immediately.');
   });
 
   static approveQuestion = asyncHandler(async (req: Request, res: Response) => {
-    const data = await InterviewRoundService.approveQuestion(req.user!.id, req.params.questionId as string);
-    return ApiResponse.success(res, data, 'Interview question approved successfully');
+    throw ApiError.forbidden('Question moderation is disabled. All submitted questions are published immediately.');
   });
 
   static rejectQuestion = asyncHandler(async (req: Request, res: Response) => {
-    const data = await InterviewRoundService.rejectQuestion(req.user!.id, req.params.questionId as string, req.body.rejectionReason);
-    return ApiResponse.success(res, data, 'Interview question rejected successfully');
+    throw ApiError.forbidden('Question moderation is disabled. All submitted questions are published immediately.');
   });
 }

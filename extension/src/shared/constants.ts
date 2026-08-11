@@ -2,12 +2,14 @@ export const PORTAL_DOMAINS = {
   PS: 'ps.bitsathy.ac.in',
   PLACEMENT_LOCAL: 'localhost:5173',
   PLACEMENT_PROD: 'placement.bitsathy.ac.in',
+  PLACEMENT_VERCEL: 'placement-portal-cyan.vercel.app',
 };
 
 export const PORTAL_URLS = {
   PS: 'https://ps.bitsathy.ac.in',
   PLACEMENT_LOCAL: 'http://localhost:5173',
   PLACEMENT_PROD: 'https://placement.bitsathy.ac.in',
+  PLACEMENT_VERCEL: 'https://placement-portal-cyan.vercel.app',
 };
 
 export const MESSAGE_TYPES = {

@@ -68,7 +68,7 @@ export class StudentService {
       throw ApiError.notFound('Student profile not found');
     }
 
-    const { name, ...profileData } = data;
+    const { name, cgpa, ...profileData } = data;
 
     return await prisma.$transaction(async (tx) => {
       if (name) {

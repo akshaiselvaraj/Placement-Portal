@@ -14,4 +14,5 @@ export interface IPSService {
   getPSData(userId: string): Promise<any>;
   pushToPO(userId: string): Promise<any>;
   disconnectPS(userId: string): Promise<any>;
+  getLevelQuestions(userId: string, levelId: string, cookie: string): Promise<any>;
 }

@@ -19,6 +19,9 @@ import { AdminDashboard, UsersManagement, CompaniesManagement, AdminsManagement,
 import { ResumesPage, ResumeWorkspace, ResumePreviewPage } from '@/features/resume-builder';
 import { PortfoliosPage, PortfolioWorkspace, PublicPortfolioView } from '@/features/portfolio-generator';
 import { BrowseJobsPage, MyApplicationsPage, RecruiterJobsPage } from '@/features/jobs';
+import { ActivityManagementPage, StudentActivitiesPage } from '@/features/activities';
+import { PSLevelQuestionsPage } from '@/features/ps';
+import { StudentResultsPage } from '@/features/results';
 import {
   RecruiterDashboard,
   ApplicantsPage as RecruiterApplicantsPage,
@@ -175,6 +178,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/placement/activities',
+        element: (
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
+            <ActivityManagementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/placement/approvals',
         element: (
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
@@ -237,6 +248,30 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <AttendedCompaniesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/student/activities',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentActivitiesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/student/ps/levels/:levelId/questions',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <PSLevelQuestionsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/student/results',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentResultsPage />
           </ProtectedRoute>
         ),
       },

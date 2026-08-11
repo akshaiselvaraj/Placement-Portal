@@ -18,6 +18,7 @@ import {
   Award,
   BookOpen,
   ShieldCheck,
+  FileSpreadsheet,
 } from 'lucide-react';
 import type { RoleType } from '@/lib/constants';
 

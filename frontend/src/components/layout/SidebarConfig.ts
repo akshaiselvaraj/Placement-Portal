@@ -21,7 +21,6 @@ import {
   FileSpreadsheet,
 } from 'lucide-react';
 import type { RoleType } from '@/lib/constants';
-
 export interface SidebarItem {
   title: string;
   href: string;

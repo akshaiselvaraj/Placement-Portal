@@ -55,10 +55,19 @@ export class ResultsService implements IResultsService {
         `[RESULT_SYNC] student=${student.id} status=success semesters=${semestersCount} subjects=${subjectsCount} duration=${duration}ms`
       );
 
-      // Update student profile lastSynced timestamp
+      // Find the latest semester's result to update the student profile CGPA
+      const latestAcademicResult = await prisma.academicResult.findFirst({
+        where: { studentId: student.id },
+        orderBy: { semester: 'desc' },
+      });
+
+      // Update student profile lastSynced timestamp and cgpa
       await prisma.studentProfile.update({
         where: { id: student.id },
-        data: { lastSynced: new Date() },
+        data: { 
+          lastSynced: new Date(),
+          ...(latestAcademicResult ? { cgpa: latestAcademicResult.cgpa } : {}),
+        },
       });
 
       return {

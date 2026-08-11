@@ -144,6 +144,8 @@ model StudentProfile {
   studentRounds  StudentRound[]
   roundAccesses  RoundAccess[]
   interviewQuestions InterviewQuestion[]
+  activityParticipations ActivityParticipant[]
+  academicResults AcademicResult[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
@@ -622,5 +624,141 @@ model InterviewQuestion {
   @@index([studentRoundId])
   @@index([status])
 }
+
+enum ActivityStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ParticipationStatus {
+  ASSIGNED
+  STARTED
+  COMPLETED
+  ABSENT
+}
+
+enum ActivityOtpType {
+  ADD_PARTICIPANT
+  START_ACTIVITY
+  END_ACTIVITY
+}
+
+model Activity {
+  id                  String             @id @default(uuid())
+  title               String
+  description         String
+  category            String
+  startTime           DateTime
+  endTime             DateTime
+  points              Int                @default(0)
+  maxParticipants     Int?
+  venue               String?
+  instructions        String?
+  gracePeriodMinutes  Int                @default(0)
+  status              ActivityStatus     @default(SCHEDULED)
+  createdById         String
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  participants        ActivityParticipant[]
+  otps                ActivityOtp[]
+  auditLogs           AuditLog[]
+
+  @@map("activities")
+}
+
+model ActivityParticipant {
+  id            String              @id @default(uuid())
+  activityId    String
+  activity      Activity            @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       StudentProfile      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status        ParticipationStatus @default(ASSIGNED)
+  assignedAt    DateTime            @default(now())
+  startedAt     DateTime?
+  completedAt   DateTime?
+  pointsAwarded Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([activityId, studentId])
+  @@index([activityId])
+  @@index([studentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("activity_participants")
+}
+
+model ActivityOtp {
+  id             String          @id @default(uuid())
+  activityId     String
+  activity       Activity        @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  type           ActivityOtpType
+  otpHash        String
+  expiresAt      DateTime
+  createdAt      DateTime        @default(now())
+  usedAt         DateTime?
+  generatedById  String
+
+  @@index([activityId])
+  @@map("activity_otps")
+}
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  actorId     String
+  actorRole   Role
+  action      String
+  activityId  String?
+  activity    Activity? @relation(fields: [activityId], references: [id], onDelete: SetNull)
+  studentId   String?
+  timestamp   DateTime  @default(now())
+  metadata    Json?
+
+  @@index([actorId])
+  @@index([activityId])
+  @@index([studentId])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model AcademicResult {
+  id          String                  @id @default(uuid())
+  studentId   String
+  student     StudentProfile          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  semester    Int
+  sgpa        Float
+  cgpa        Float
+  status      String                  @default("PUBLISHED") // PUBLISHED, WITHHELD, etc.
+  source      String                  @default("BIP")
+  lastSynced  DateTime                @default(now())
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  subjects    AcademicResultSubject[]
+
+  @@unique([studentId, semester])
+  @@index([studentId])
+  @@map("academic_results")
+}
+
+model AcademicResultSubject {
+  id           String         @id @default(uuid())
+  resultId     String
+  result       AcademicResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  courseCode   String
+  courseName   String
+  credits      Int
+  grade        String
+  gradePoint   Float
+  marks        Int?
+  resultStatus String         @default("PASS") // PASS, FAIL, WH, etc.
+
+  @@unique([resultId, courseCode])
+  @@index([resultId])
+  @@map("academic_result_subjects")
+}
+
 
 

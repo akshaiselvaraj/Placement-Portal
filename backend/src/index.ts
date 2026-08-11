@@ -16,6 +16,8 @@ import { jobRoutes } from './modules/job';
 import { analyticsRoutes } from './modules/analytics';
 import { psRoutes } from './modules/ps';
 import { studentInterviewRouter, placementInterviewRouter } from './modules/interview-round';
+import { activityRoutes } from './modules/activities';
+import { resultsRoutes } from './modules/results';
 
 const app = express();
 
@@ -62,15 +64,22 @@ app.use('/api/portfolios', portfolioRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/ps', psRoutes);
+app.use('/api/activities', activityRoutes);
+app.use('/api/results', resultsRoutes);
 
 // Error handling
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+import { createServer } from 'http';
+import { initSocket } from './config/socket';
+
 // Start server
 const PORT = env.PORT;
+const server = createServer(app);
+initSocket(server);
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Placement Portal Server running on port ${PORT} in ${env.NODE_ENV} mode`);
   console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
 });

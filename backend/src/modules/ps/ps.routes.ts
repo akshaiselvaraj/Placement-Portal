@@ -16,6 +16,9 @@ router.post('/push', authenticate, authorize('STUDENT'), PSController.pushToPO);
 // Get current logged-in user's PS details
 router.get('/me', authenticate, authorize('STUDENT'), PSController.getPSData);
 
+// Fetch practice questions for a PS level
+router.get('/levels/:levelId/questions', authenticate, authorize('STUDENT'), PSController.getLevelQuestions);
+
 // Disconnect account: reset psConnected to false
 router.post('/disconnect', authenticate, authorize('STUDENT'), PSController.disconnectPS);
 

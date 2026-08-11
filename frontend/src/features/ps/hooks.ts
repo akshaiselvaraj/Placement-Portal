@@ -58,3 +58,12 @@ export function usePushPSData() {
     },
   });
 }
+
+export function usePSLevelQuestions(levelId: string) {
+  return useQuery({
+    queryKey: ['ps-level-questions', levelId],
+    queryFn: () => psApi.getLevelQuestions(levelId),
+    enabled: !!levelId,
+    retry: false,
+  });
+}

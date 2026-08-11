@@ -19,6 +19,7 @@ import {
   BookOpen,
   ShieldCheck,
   HelpCircle,
+  FileSpreadsheet,
 } from 'lucide-react';
 import type { RoleType } from '@/lib/constants';
 
@@ -36,6 +37,7 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
     { title: 'Manage Companies', href: '/admin/companies', icon: Building2 },
     { title: 'System Audit Logs', href: '/admin/logs', icon: ClipboardList },
     { title: 'System Settings', href: '/admin/settings', icon: Settings },
+    { title: 'Activities', href: '/placement/activities', icon: Calendar },
   ],
   PLACEMENT_OFFICER: [
     { title: 'Dashboard', href: '/placement/dashboard', icon: LayoutDashboard },
@@ -49,6 +51,7 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
     { title: 'Scheduler', href: '/placement/scheduler', icon: UserCheck },
     { title: 'Publish Results', href: '/placement/results', icon: Layers },
     { title: 'Placement Analytics', href: '/placement/analytics', icon: BarChart3 },
+    { title: 'Activities', href: '/placement/activities', icon: Calendar },
   ],
   STUDENT: [
     { title: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
@@ -60,6 +63,8 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
     { title: 'Resume Builder', href: '/student/resumes', icon: FileText },
     { title: 'Portfolio Generator', href: '/student/portfolio', icon: FolderHeart },
     { title: 'ATS Checker', href: '/student/ats-check', icon: Award },
+    { title: 'Activities', href: '/student/activities', icon: Award },
+    { title: 'Academic Results', href: '/student/results', icon: FileSpreadsheet },
   ],
   RECRUITER: [
     { title: 'Dashboard', href: '/recruiter/dashboard', icon: LayoutDashboard },

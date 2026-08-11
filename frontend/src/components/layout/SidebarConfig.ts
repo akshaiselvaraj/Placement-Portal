@@ -18,7 +18,6 @@ import {
   Award,
   BookOpen,
   ShieldCheck,
-  HelpCircle,
 } from 'lucide-react';
 import type { RoleType } from '@/lib/constants';
 
@@ -44,7 +43,6 @@ export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
     { title: 'Companies', href: '/placement/companies', icon: Building2 },
     { title: 'Applications', href: '/placement/applications', icon: ClipboardList },
     { title: 'Interview Round Access', href: '/placement/interview-rounds', icon: ShieldCheck },
-    { title: 'Interview Question Review', href: '/placement/interview-questions', icon: HelpCircle },
     { title: 'Approvals Desk', href: '/placement/approvals', icon: UserCheck },
     { title: 'Scheduler', href: '/placement/scheduler', icon: UserCheck },
     { title: 'Publish Results', href: '/placement/results', icon: Layers },

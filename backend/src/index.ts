@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from './config/env';
+import prisma from './config/database';
 import { errorHandler, notFoundHandler } from './middleware';
 import { authRoutes } from './modules/auth';
 import { studentRoutes } from './modules/student';
@@ -70,9 +71,37 @@ app.use(errorHandler);
 // Start server
 const PORT = env.PORT;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Placement Portal Server running on port ${PORT} in ${env.NODE_ENV} mode`);
   console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+
+  try {
+    const studentsWithNoneClearance = await prisma.studentProfile.findMany({
+      where: {
+        OR: [
+          { levelClearance: 'None' },
+          { levelClearance: '' },
+          { levelClearance: '0' },
+          { levelClearance: null }
+        ],
+        psConnected: true
+      },
+      include: {
+        psCourses: true
+      }
+    });
+
+    for (const student of studentsWithNoneClearance) {
+      const totalLevelsCompleted = student.psCourses.reduce((sum: number, c: any) => sum + c.completedLevels, 0);
+      await prisma.studentProfile.update({
+        where: { id: student.id },
+        data: { levelClearance: String(totalLevelsCompleted) }
+      });
+      console.log(`🔧 Startup: Migrated levelClearance for student ${student.rollNumber} to ${totalLevelsCompleted}`);
+    }
+  } catch (err: any) {
+    console.error('❌ Startup: Failed to run levelClearance migration:', err.message || err);
+  }
 });
 
 export default app;

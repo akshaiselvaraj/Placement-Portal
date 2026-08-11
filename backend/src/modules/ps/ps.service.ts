@@ -86,35 +86,6 @@ export class PSService implements IPSService {
       }
     });
 
-    // Extract PS level clearance safely
-    if (summaryData?.data?.profile?.level) {
-      levelClearance = String(summaryData.data.profile.level);
-    } else if (summaryData?.data?.level) {
-      levelClearance = String(summaryData.data.level);
-    } else if (summaryData?.data?.levelClearance) {
-      levelClearance = String(summaryData.data.levelClearance);
-    }
-
-    // Validate using Zod schema
-    const validationResult = connectPSSchema.safeParse({
-      activityPoints,
-      opportunityPoints,
-      responsiveScore,
-      levelClearance,
-    });
-
-    if (!validationResult.success) {
-      const fieldErrors: Record<string, string[]> = {};
-      validationResult.error.issues.forEach((issue) => {
-        const field = issue.path.join('.');
-        if (!fieldErrors[field]) {
-          fieldErrors[field] = [];
-        }
-        fieldErrors[field].push(issue.message);
-      });
-      throw new PSValidationError(undefined, fieldErrors);
-    }
-
     // 3. Parse courses data
     if (!Array.isArray(coursesData)) {
       coursesData = [];
@@ -139,6 +110,41 @@ export class PSService implements IPSService {
       };
     });
 
+    // Extract PS level clearance safely
+    if (summaryData?.data?.profile?.level) {
+      levelClearance = String(summaryData.data.profile.level);
+    } else if (summaryData?.data?.level) {
+      levelClearance = String(summaryData.data.level);
+    } else if (summaryData?.data?.levelClearance) {
+      levelClearance = String(summaryData.data.levelClearance);
+    }
+
+    // Fallback to total levels completed if levelClearance is 'None'
+    const totalLevelsCompleted = coursesToSync.reduce((sum: number, c: any) => sum + c.completedLevels, 0);
+    if (levelClearance === 'None' || levelClearance === '' || levelClearance === '0') {
+      levelClearance = String(totalLevelsCompleted);
+    }
+
+    // Validate using Zod schema
+    const validationResult = connectPSSchema.safeParse({
+      activityPoints,
+      opportunityPoints,
+      responsiveScore,
+      levelClearance,
+    });
+
+    if (!validationResult.success) {
+      const fieldErrors: Record<string, string[]> = {};
+      validationResult.error.issues.forEach((issue) => {
+        const field = issue.path.join('.');
+        if (!fieldErrors[field]) {
+          fieldErrors[field] = [];
+        }
+        fieldErrors[field].push(issue.message);
+      });
+      throw new PSValidationError(undefined, fieldErrors);
+    }
+
     // 4. Ensure Student profile exists
     const student = await this.repository.findByUserId(userId);
     if (!student) {
@@ -157,6 +163,11 @@ export class PSService implements IPSService {
     const student = await this.repository.findByUserId(userId);
     if (!student) {
       throw ApiError.notFound('Student profile not found');
+    }
+    if (student.psConnected && (!student.levelClearance || student.levelClearance === 'None' || student.levelClearance === '' || student.levelClearance === '0')) {
+      const courses = student.psCourses || [];
+      const totalLevelsCompleted = courses.reduce((sum: number, c: any) => sum + c.completedLevels, 0);
+      student.levelClearance = String(totalLevelsCompleted);
     }
     return student;
   }

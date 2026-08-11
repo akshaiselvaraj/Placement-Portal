@@ -14,7 +14,6 @@ import {
   InterviewsPage as PlacementInterviewsPage,
   ResultsManagementPage,
   InterviewRoundManagementPage,
-  InterviewQuestionReviewPage,
 } from '@/features/placement-officer';
 import { AdminDashboard, UsersManagement, CompaniesManagement, AdminsManagement, SystemSettings, SystemLogs } from '@/features/admin';
 import { ResumesPage, ResumeWorkspace, ResumePreviewPage } from '@/features/resume-builder';
@@ -207,22 +206,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      {
-        path: '/placement/interview-questions',
-        element: (
-          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
-            <InterviewQuestionReviewPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/placement-officer/interview-questions',
-        element: (
-          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER', 'ADMIN']}>
-            <InterviewQuestionReviewPage />
-          </ProtectedRoute>
-        ),
-      },
+
       {
         path: '/placement/results',
         element: (

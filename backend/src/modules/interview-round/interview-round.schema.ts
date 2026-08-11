@@ -23,7 +23,7 @@ export const createQuestionSchema = z.object({
   difficulty: z.nativeEnum(QuestionDifficulty).default(QuestionDifficulty.MEDIUM),
   topic: z.string().max(100).optional(),
   answer: z.string().max(4000).optional(),
-  status: z.nativeEnum(QuestionStatus).optional().default(QuestionStatus.PENDING_REVIEW),
+  status: z.nativeEnum(QuestionStatus).optional().default(QuestionStatus.APPROVED),
 });
 
 export const createQuestionsBatchSchema = z.object({

@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BIT PS Connector</title>
-    <script type="module" crossorigin src="/popup.js"></script>
-    <link rel="stylesheet" crossorigin href="/popup.css">
+    <title>SessionScope</title>
+    <script type="module" crossorigin src="./popup.js"></script>
+    <link rel="stylesheet" crossorigin href="./popup.css">
   </head>
   <body>
     <div class="popup-container">
@@ -13,45 +13,93 @@
       <header class="header">
         <div class="logo-container">
           <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
-            <line x1="8" y1="12" x2="16" y2="12"></line>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
-          <h1 class="title">BIT PS Connector</h1>
+          <h1 class="title">SessionScope</h1>
         </div>
+        <span class="version">v1.0.0</span>
       </header>
 
-      <!-- Status Panel -->
-      <div class="status-panel">
-        <div class="status-label">PS Portal Status</div>
-        <div id="status-badge" class="badge badge-disconnected">Checking...</div>
+      <!-- ONBOARDING VIEW -->
+      <div id="onboarding-view" class="view-container">
+        <div class="onboarding-header">
+          <h2 class="onboarding-title">Welcome to SessionScope</h2>
+          <p class="onboarding-desc">Register your details to use the extension.</p>
+        </div>
+
+        <form id="onboarding-form" class="form-container" novalidate>
+          <div class="form-group">
+            <label for="input-name" class="form-label">Full Name <span class="required">*</span></label>
+            <input type="text" id="input-name" class="form-input" placeholder="e.g. John Doe" required />
+          </div>
+
+          <div class="form-group">
+            <label for="input-email" class="form-label">Email Address <span class="required">*</span></label>
+            <input type="email" id="input-email" class="form-input" placeholder="e.g. john@example.com" required />
+          </div>
+
+          <!-- Privacy Consent Message -->
+          <div class="consent-box">
+            <p class="consent-text">
+              We collect your name and email address to manage your extension account and provide dashboard functionality. We do not collect your passwords or PS Portal authentication credentials.
+            </p>
+            <label class="consent-checkbox-label">
+              <input type="checkbox" id="checkbox-consent" required />
+              <span>I understand and agree to the collection of the information described above.</span>
+            </label>
+          </div>
+
+          <button type="button" id="btn-register" class="btn btn-primary">
+            Register & Continue
+          </button>
+        </form>
       </div>
 
-      <!-- Action Buttons -->
-      <main class="actions">
-        <button id="btn-check-login" class="btn btn-secondary">
-          Check Login Status
-        </button>
-        <button id="btn-connect" class="btn btn-primary" disabled>
-          Connect PS Account
-        </button>
-        <button id="btn-sync" class="btn btn-secondary" disabled>
-          Sync Now
-        </button>
-      </main>
+      <!-- MAIN PROFILE VIEW -->
+      <div id="main-view" class="view-container hidden">
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="avatar-circle" id="user-avatar-initials">--</div>
+            <div class="profile-details">
+              <div id="user-name" class="user-name">Loading...</div>
+              <div id="user-email" class="user-email">Loading...</div>
+            </div>
+          </div>
 
-      <!-- Messages/Errors -->
+          <div class="status-grid">
+            <div class="status-item">
+              <span class="status-key">Extension Status:</span>
+              <span class="status-val badge badge-connected">Active</span>
+            </div>
+            <div class="status-item">
+              <span class="status-key">Backend Connection:</span>
+              <span id="backend-status" class="status-val badge badge-connected">Connected</span>
+            </div>
+            <div class="status-item">
+              <span class="status-key">PS Session Cookie:</span>
+              <span id="ps-cookie-status" class="status-val badge badge-disconnected">Checking...</span>
+            </div>
+            <div class="status-item">
+              <span class="status-key">Version:</span>
+              <span class="status-val text-muted">v1.0.0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-section">
+          <button id="btn-open-ps-portal" class="btn btn-primary btn-portal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            Open PS Portal
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages / Feedback -->
       <div id="message-container" class="message-box hidden"></div>
-
-      <!-- Footer -->
-      <footer class="footer">
-        <span class="version">v1.0.0</span>
-        <button id="btn-settings" class="btn-settings-icon" title="Extension Settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        </button>
-      </footer>
     </div>
   </body>
 </html>

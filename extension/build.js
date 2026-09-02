@@ -5,6 +5,7 @@ const __dirname = resolve();
 
 const popupConfig = {
   configFile: false,
+  base: './',
   build: {
     outDir: 'dist',
     emptyOutDir: true,

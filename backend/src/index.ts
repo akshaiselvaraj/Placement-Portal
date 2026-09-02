@@ -16,6 +16,7 @@ import { jobRoutes } from './modules/job';
 import { analyticsRoutes } from './modules/analytics';
 import { psRoutes } from './modules/ps';
 import { studentInterviewRouter, placementInterviewRouter } from './modules/interview-round';
+import { extensionUserRoutes, ExtensionUserController } from './modules/extension-user';
 
 const app = express();
 
@@ -23,7 +24,13 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like extension background/popup, curl, etc.)
+      if (!origin || origin.startsWith('chrome-extension://') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
@@ -62,6 +69,10 @@ app.use('/api/portfolios', portfolioRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/ps', psRoutes);
+app.use('/api/users', extensionUserRoutes);
+app.get('/api/dashboard/stats', ExtensionUserController.getDashboardStats);
+app.post('/api/activity', ExtensionUserController.logActivity);
+app.get('/api/activity', ExtensionUserController.getActivityLogs);
 
 // Error handling
 app.use(notFoundHandler);

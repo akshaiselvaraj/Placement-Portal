@@ -73,10 +73,27 @@ export class AuthService {
         await tx.placementOfficerProfile.create({
           data: {
             userId: user.id,
-            department: input.department!,
-            designation: input.designation,
+            department: input.department || 'Administration',
+            designation: input.designation || 'Placement Officer',
           },
         });
+      } else if (input.role === ROLES.ADMIN) {
+        try {
+          await (tx as any).admin.create({
+            data: {
+              userId: user.id,
+              employeeId: `ADM_${Date.now()}`,
+              firstName: user.name.split(' ')[0] || user.name,
+              lastName: user.name.split(' ').slice(1).join(' ') || 'Admin',
+              department: 'System Administration',
+              designation: 'System Administrator',
+              role: 'SUPER_ADMIN',
+              status: 'ACTIVE',
+            },
+          });
+        } catch (err) {
+          console.warn('Admin profile creation optional error:', err);
+        }
       }
 
       // Generate JWT Token

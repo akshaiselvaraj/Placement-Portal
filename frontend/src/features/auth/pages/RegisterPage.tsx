@@ -175,6 +175,7 @@ export function RegisterPage() {
                 >
                   <option value="STUDENT">Student</option>
                   <option value="PLACEMENT_OFFICER">Placement Officer</option>
+                  <option value="ADMIN">System Administrator</option>
                 </select>
               </div>
             </div>

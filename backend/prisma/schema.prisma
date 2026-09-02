@@ -623,4 +623,30 @@ model InterviewQuestion {
   @@index([status])
 }
 
+model ExtensionUser {
+  id               String                 @id @default(uuid())
+  fullName         String
+  email            String                 @unique
+  status           String                 @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  consentAccepted  Boolean                @default(true)
+  consentTimestamp DateTime               @default(now())
+  extensionVersion String                 @default("1.0.0")
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  activityLogs     ExtensionActivityLog[]
 
+  @@map("extension_users")
+}
+
+model ExtensionActivityLog {
+  id           String        @id @default(uuid())
+  userId       String
+  user         ExtensionUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityType String        // USER_REGISTERED, EXTENSION_OPENED, PROFILE_UPDATED, PORTAL_OPEN_REQUESTED
+  metadata     Json?
+  createdAt    DateTime      @default(now())
+
+  @@index([userId])
+  @@index([activityType])
+  @@map("extension_activity_logs")
+}

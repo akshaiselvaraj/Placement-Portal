@@ -16,7 +16,7 @@ import {
   InterviewRoundManagementPage,
   InterviewQuestionReviewPage,
 } from '@/features/placement-officer';
-import { AdminDashboard, UsersManagement, CompaniesManagement, AdminsManagement, SystemSettings, SystemLogs } from '@/features/admin';
+import { AdminDashboard, UsersManagement, UserDetailPage, ActivityLogPage, CompaniesManagement, AdminsManagement, SystemSettings, SystemLogs } from '@/features/admin';
 import { ResumesPage, ResumeWorkspace, ResumePreviewPage } from '@/features/resume-builder';
 import { PortfoliosPage, PortfolioWorkspace, PublicPortfolioView } from '@/features/portfolio-generator';
 import { BrowseJobsPage, MyApplicationsPage, RecruiterJobsPage } from '@/features/jobs';
@@ -92,6 +92,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <UsersManagement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/users/:id',
+        element: (
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <UserDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/activity',
+        element: (
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <ActivityLogPage />
           </ProtectedRoute>
         ),
       },

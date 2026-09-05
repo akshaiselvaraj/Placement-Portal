@@ -323,7 +323,7 @@ export class InterviewRoundService {
           difficulty: qData.difficulty || QuestionDifficulty.MEDIUM,
           topic: qData.topic || null,
           answer: qData.answer || null,
-          status: qData.status || QuestionStatus.PENDING_REVIEW,
+          status: QuestionStatus.APPROVED,
         },
       });
       createdQuestions.push(q);
@@ -385,7 +385,7 @@ export class InterviewRoundService {
 
     return await prisma.interviewQuestion.update({
       where: { id: questionId },
-      data: { status: QuestionStatus.PENDING_REVIEW },
+      data: { status: QuestionStatus.APPROVED },
     });
   }
 
@@ -409,7 +409,7 @@ export class InterviewRoundService {
     const skip = (pageNum - 1) * limitNum;
 
     const where: any = {
-      status: QuestionStatus.APPROVED,
+      status: { in: [QuestionStatus.APPROVED, QuestionStatus.PENDING_REVIEW] },
     };
 
     if (filters.companyId) {
@@ -494,7 +494,7 @@ export class InterviewRoundService {
 
     // Aggregate companies with approved questions count
     const approvedQuestionsAll = await prisma.interviewQuestion.findMany({
-      where: { status: QuestionStatus.APPROVED },
+      where: { status: { in: [QuestionStatus.APPROVED, QuestionStatus.PENDING_REVIEW] } },
       include: {
         studentRound: {
           include: {

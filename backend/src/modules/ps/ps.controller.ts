@@ -60,6 +60,20 @@ export class PSController {
     return ApiResponse.success(res, psData, 'PS data fetched successfully');
   });
 
+  static getLevelQuestions = asyncHandler(async (req: Request, res: Response) => {
+    const cookie = req.headers['x-ps-session'] as string;
+    if (!cookie) {
+      throw ApiError.badRequest('X-PS-Session header is required');
+    }
+    const levelId = req.params.levelId as string;
+    if (!levelId) {
+      throw ApiError.badRequest('levelId parameter is required');
+    }
+
+    const data = await psService.getLevelQuestions(req.user!.id, levelId, cookie);
+    return ApiResponse.success(res, data, 'Practice questions fetched successfully');
+  });
+
   static disconnectPS = asyncHandler(async (req: Request, res: Response) => {
     await psService.disconnectPS(req.user!.id);
     return ApiResponse.success(res, null, PS_MESSAGES.DISCONNECT_SUCCESS);

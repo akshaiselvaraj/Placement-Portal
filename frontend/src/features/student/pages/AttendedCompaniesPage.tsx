@@ -12,10 +12,8 @@ import {
   HelpCircle,
   Clock,
   Sparkles,
-  ChevronRight,
   Send,
   Trash2,
-  Edit3,
   X,
   AlertCircle,
 } from 'lucide-react';
@@ -32,7 +30,6 @@ export function AttendedCompaniesPage() {
   const [difficulty, setDifficulty] = useState<InterviewQuestion['difficulty']>('MEDIUM');
   const [topic, setTopic] = useState('');
   const [answer, setAnswer] = useState('');
-  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
 
   // Query: Attended Companies
   const { data: attendedCompanies = [], isLoading } = useQuery({
@@ -45,7 +42,7 @@ export function AttendedCompaniesPage() {
     mutationFn: ({ studentRoundId, questions }: { studentRoundId: string; questions: any[] }) =>
       interviewService.addQuestionsToRound(studentRoundId, questions),
     onSuccess: () => {
-      toast.success('Interview question submitted for officer review!');
+      toast.success('Interview question submitted successfully!');
       queryClient.invalidateQueries({ queryKey: ['student-attended-companies'] });
       resetForm();
     },
@@ -72,7 +69,6 @@ export function AttendedCompaniesPage() {
     setDifficulty('MEDIUM');
     setTopic('');
     setAnswer('');
-    setEditingQuestionId(null);
   };
 
   const handleOpenQuestionsModal = (app: AttendedCompany, round: StudentRound) => {
@@ -99,7 +95,7 @@ export function AttendedCompaniesPage() {
           difficulty,
           topic: topic.trim() || undefined,
           answer: answer.trim() || undefined,
-          status: 'PENDING_REVIEW',
+          status: 'APPROVED',
         },
       ],
     });
@@ -126,7 +122,7 @@ export function AttendedCompaniesPage() {
   const getQuestionStatusBadge = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return <span className="px-2 py-0.5 text-xs font-medium rounded bg-emerald-500/10 text-emerald-500">Approved</span>;
+        return <span className="px-2 py-0.5 text-xs font-medium rounded bg-emerald-500/10 text-emerald-500">Published</span>;
       case 'PENDING_REVIEW':
         return <span className="px-2 py-0.5 text-xs font-medium rounded bg-amber-500/10 text-amber-400">Pending Review</span>;
       case 'REJECTED':
@@ -379,6 +375,11 @@ export function AttendedCompaniesPage() {
                   Add New Interview Question
                 </h3>
 
+                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 p-3 rounded-lg text-xs font-semibold flex items-center gap-2">
+                  <Unlock className="h-4 w-4 shrink-0 text-emerald-500" />
+                  <span>You can share questions for this round because the Placement Officer has unlocked it for you.</span>
+                </div>
+
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Question Text <span className="text-rose-400">*</span>
@@ -470,7 +471,7 @@ export function AttendedCompaniesPage() {
                     className="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
                   >
                     <Send className="h-3.5 w-3.5" />
-                    {addQuestionsMutation.isPending ? 'Submitting...' : 'Submit for Review'}
+                    {addQuestionsMutation.isPending ? 'Submitting...' : 'Submit Question'}
                   </button>
                 </div>
               </form>

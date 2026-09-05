@@ -126,7 +126,7 @@ export function StudentsManagement() {
                       </span>
 
                       {/* Activity Points Badge */}
-                      {student.activityPoints !== undefined && student.activityPoints > 0 ? (
+                      {student.activityPoints !== null && student.activityPoints !== undefined && student.activityPoints > 0 ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/10 text-amber-700 border border-amber-500/15">
                           <Award className="h-3 w-3" />
                           Act: {student.activityPoints.toLocaleString()}
@@ -255,7 +255,7 @@ export function StudentsManagement() {
                       Activity Points
                     </span>
                     <span className="text-3xl font-black text-[hsl(var(--text-primary))] block mt-2.5 tracking-tight">
-                      {selectedStudent.activityPoints !== undefined ? selectedStudent.activityPoints.toLocaleString() : '0'}
+                      {selectedStudent.activityPoints != null ? selectedStudent.activityPoints.toLocaleString() : '0'}
                     </span>
                     <span className="mt-2 block">
                       {selectedStudent.activityPoints && selectedStudent.activityPoints > 0 ? (

@@ -121,25 +121,11 @@ export function ProfilePage() {
             educations={student.educations || []}
             onAdd={async (data) => {
               const { gradeType, ...payload } = data;
-              const res = await addEducation(payload);
-              if (gradeType === 'CGPA' && payload.grade) {
-                const numericCgpa = parseFloat(payload.grade);
-                if (!isNaN(numericCgpa)) {
-                  await updateProfile({ cgpa: numericCgpa });
-                }
-              }
-              return res;
+              return await addEducation(payload);
             }}
             onUpdate={async (id, data) => {
               const { gradeType, ...payload } = data;
-              const res = await updateEducation({ id, data: payload });
-              if (gradeType === 'CGPA' && payload.grade) {
-                const numericCgpa = parseFloat(payload.grade);
-                if (!isNaN(numericCgpa)) {
-                  await updateProfile({ cgpa: numericCgpa });
-                }
-              }
-              return res;
+              return await updateEducation({ id, data: payload });
             }}
             onDelete={deleteEducation}
           />

@@ -19,7 +19,7 @@ export function InterviewQuestionReviewPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'>('PENDING_REVIEW');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('ALL');
+  const selectedCompanyId = 'ALL';
 
   // Rejection Modal State
   const [rejectingQuestion, setRejectingQuestion] = useState<InterviewQuestion | null>(null);

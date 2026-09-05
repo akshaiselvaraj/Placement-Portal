@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import type { Column } from '@/components/common';
 import { Briefcase, GraduationCap, Calendar, Clock, CheckCircle2, ChevronRight, XCircle } from 'lucide-react';
 import type { Application } from '@/types';
-import { PSCard, PSCoursesCard } from '@/features/ps';
+import { PSCard, PSCoursesCard, PSLevelsCard } from '@/features/ps';
+import { AcademicPerformanceCard } from '@/features/results';
 
 export function StudentDashboard() {
   const { student, isLoading, isError } = useStudentProfile();
@@ -243,6 +244,8 @@ export function StudentDashboard() {
         {/* Sidebar info: interviews list (1/3 width) */}
         <div className="space-y-6">
           <PSCard />
+          <PSLevelsCard />
+          <AcademicPerformanceCard />
 
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-[hsl(var(--text-primary))]">Upcoming Interviews</h3>

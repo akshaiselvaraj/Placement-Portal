@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from './config/env';
+import prisma from './config/database';
 import { errorHandler, notFoundHandler } from './middleware';
 import { authRoutes } from './modules/auth';
 import { studentRoutes } from './modules/student';
@@ -17,6 +18,8 @@ import { analyticsRoutes } from './modules/analytics';
 import { psRoutes } from './modules/ps';
 import { studentInterviewRouter, placementInterviewRouter } from './modules/interview-round';
 import { extensionUserRoutes, ExtensionUserController } from './modules/extension-user';
+import { activityRoutes } from './modules/activities';
+import { resultsRoutes } from './modules/results';
 
 const app = express();
 
@@ -73,17 +76,52 @@ app.use('/api/users', extensionUserRoutes);
 app.get('/api/dashboard/stats', ExtensionUserController.getDashboardStats);
 app.post('/api/activity', ExtensionUserController.logActivity);
 app.get('/api/activity', ExtensionUserController.getActivityLogs);
+app.use('/api/activities', activityRoutes);
+app.use('/api/results', resultsRoutes);
 
 // Error handling
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+import { createServer } from 'http';
+import { initSocket } from './config/socket';
+
 // Start server
 const PORT = env.PORT;
+const server = createServer(app);
+initSocket(server);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Placement Portal Server running on port ${PORT} in ${env.NODE_ENV} mode`);
   console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+
+  try {
+    const studentsWithNoneClearance = await prisma.studentProfile.findMany({
+      where: {
+        OR: [
+          { levelClearance: 'None' },
+          { levelClearance: '' },
+          { levelClearance: '0' },
+          { levelClearance: null }
+        ],
+        psConnected: true
+      },
+      include: {
+        psCourses: true
+      }
+    });
+
+    for (const student of studentsWithNoneClearance) {
+      const totalLevelsCompleted = student.psCourses.reduce((sum: number, c: any) => sum + c.completedLevels, 0);
+      await prisma.studentProfile.update({
+        where: { id: student.id },
+        data: { levelClearance: String(totalLevelsCompleted) }
+      });
+      console.log(`🔧 Startup: Migrated levelClearance for student ${student.rollNumber} to ${totalLevelsCompleted}`);
+    }
+  } catch (err: any) {
+    console.error('❌ Startup: Failed to run levelClearance migration:', err.message || err);
+  }
 });
 
 export default app;

@@ -18,6 +18,8 @@ import {
   Award,
   BookOpen,
   ShieldCheck,
+  HelpCircle,
+  Activity,
   FileSpreadsheet,
 } from 'lucide-react';
 import type { RoleType } from '@/lib/constants';
@@ -30,7 +32,8 @@ export interface SidebarItem {
 export const SIDEBAR_ITEMS: Record<RoleType, SidebarItem[]> = {
   ADMIN: [
     { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { title: 'Manage Users', href: '/admin/users', icon: Users },
+    { title: 'Users', href: '/admin/users', icon: Users },
+    { title: 'Activity Logs', href: '/admin/activity', icon: Activity },
     { title: 'Manage Admins', href: '/admin/admins', icon: Shield },
     { title: 'Manage Companies', href: '/admin/companies', icon: Building2 },
     { title: 'System Audit Logs', href: '/admin/logs', icon: ClipboardList },

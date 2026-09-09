@@ -58,8 +58,58 @@ export class PlacementOfficerService {
     return drive;
   }
 
+  // Helper to sync a PlacementDrive to the Job table so students can view & apply to it
+  private static async syncDriveToJob(drive: any) {
+    const jobData = {
+      title: drive.jobRole ? `${drive.title} - ${drive.jobRole}` : drive.title,
+      description: drive.description || '',
+      companyId: drive.companyId,
+      type: drive.employmentType || 'Full-time',
+      location: drive.location || 'Remote',
+      workMode: 'On-site',
+      employmentType: drive.employmentType || 'Full-time',
+      salaryMin: drive.package ? drive.package * 100000 : 0,
+      salaryMax: drive.package ? drive.package * 100000 : 0,
+      deadline: drive.registrationDeadline || drive.endDate || new Date(),
+      status: (drive.status === 'ONGOING' || drive.status === 'UPCOMING') ? 'OPEN' as any : 'CLOSED' as any,
+      eligibility: drive.eligibilityCriteria || '',
+      requirements: drive.bondDetails || '',
+      requiredSkills: drive.requiredSkills || [],
+      preferredSkills: [],
+      minCgpa: drive.minCgpa || 0,
+      minActivityPoints: drive.minActivityPoints || 0,
+      minPsLevel: drive.minPsLevel || null,
+      min10thMarks: drive.min10thMarks || null,
+      min12thMarks: drive.min12thMarks || null,
+      eligibleDepartments: drive.departmentsEligible || [],
+      eligibleGradYears: drive.batchYear ? [drive.batchYear] : [],
+      requiredExperience: 0,
+      openings: drive.openings || 1,
+      postedBy: 'PLACEMENT_OFFICER',
+    };
+
+    await prisma.job.upsert({
+      where: { id: drive.id },
+      create: {
+        id: drive.id,
+        ...jobData,
+      },
+      update: jobData,
+    });
+  }
+
+  private static async deleteJobForDrive(driveId: string) {
+    try {
+      await prisma.job.delete({
+        where: { id: driveId },
+      });
+    } catch (err) {
+      // Ignore if job doesn't exist
+    }
+  }
+
   static async createDrive(data: any) {
-    return await prisma.placementDrive.create({
+    const drive = await prisma.placementDrive.create({
       data: {
         title: data.title,
         description: data.description,
@@ -87,6 +137,8 @@ export class PlacementOfficerService {
         requiredDocuments: data.requiredDocuments || [],
       },
     });
+    await this.syncDriveToJob(drive);
+    return drive;
   }
 
   static async updateDrive(id: string, data: any) {
@@ -106,19 +158,23 @@ export class PlacementOfficerService {
     if (data.batchYear) updateData.batchYear = parseInt(data.batchYear, 10);
     if (data.openings) updateData.openings = parseInt(data.openings, 10);
 
-    return await prisma.placementDrive.update({
+    const updated = await prisma.placementDrive.update({
       where: { id },
       data: updateData,
     });
+    await this.syncDriveToJob(updated);
+    return updated;
   }
 
   static async deleteDrive(id: string) {
-    return await prisma.placementDrive.delete({ where: { id } });
+    const deleted = await prisma.placementDrive.delete({ where: { id } });
+    await this.deleteJobForDrive(id);
+    return deleted;
   }
 
   static async duplicateDrive(id: string) {
     const source = await this.getDriveById(id);
-    return await prisma.placementDrive.create({
+    const drive = await prisma.placementDrive.create({
       data: {
         title: `${source.title} (Copy)`,
         description: source.description,
@@ -144,19 +200,32 @@ export class PlacementOfficerService {
         requiredDocuments: source.requiredDocuments,
       },
     });
+    await this.syncDriveToJob(drive);
+    return drive;
   }
 
   static async bulkArchiveDrives(ids: string[]) {
-    return await prisma.placementDrive.updateMany({
+    const res = await prisma.placementDrive.updateMany({
       where: { id: { in: ids } },
       data: { status: 'COMPLETED' },
     });
+    const updatedDrives = await prisma.placementDrive.findMany({
+      where: { id: { in: ids } },
+    });
+    for (const drive of updatedDrives) {
+      await this.syncDriveToJob(drive);
+    }
+    return res;
   }
 
   static async bulkDeleteDrives(ids: string[]) {
-    return await prisma.placementDrive.deleteMany({
+    const res = await prisma.placementDrive.deleteMany({
       where: { id: { in: ids } },
     });
+    for (const id of ids) {
+      await this.deleteJobForDrive(id);
+    }
+    return res;
   }
 
   static async getDriveStats() {
